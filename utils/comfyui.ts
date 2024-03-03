@@ -1,8 +1,6 @@
 // import * as fs from "fs";
 import axios from "axios";
-import { v4 as uuidv4 } from "uuid";
-import WebSocket from "ws";
-import { PNG } from "pngjs";
+import { workerData } from "worker_threads";
 
 export function changeImageSize(
   width: number,
@@ -36,26 +34,23 @@ export function changeImageSize(
 
 export async function queuePrompt(
   prompt: Object,
-  clientId: string,
-  serverAddress: string
+  clientId: string
 ): Promise<any> {
+  const url = `http://${process.env.NEXT_PUBLIC_SERVER_ADDRESS}/prompt`;
+
+  const data = {
+    prompt: prompt,
+    client_id: clientId,
+  };
   while (true) {
     try {
-      const p = { prompt: prompt, client_id: clientId };
-      const data = JSON.stringify(p);
-      const response = await axios.post(
-        `http://${serverAddress}/prompt`,
-        data,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          timeout: 5000,
-        }
-      );
-      return response.data;
+      const response = await axios.post(url, data, {
+        timeout: 5000,
+      });
+
+      return response.data.prompt_id;
     } catch (error) {
-      console.log("连接超时，正在重试:", error);
+      throw error;
     }
   }
 }
@@ -149,34 +144,75 @@ export async function uploadImage(
   return promise;
 }
 
+export async function getQueueTaskNumber(
+  serverAddress: string
+): Promise<number> {
+  const response = await axios.get(`http://${serverAddress}/queue`);
+  const taskNumber =
+    response.data.queue_running.length + response.data.queue_pending.length - 1;
+  return taskNumber;
+}
+
 export async function getImages(
   ws: WebSocket,
   prompt: any,
   clientId: string,
-  serverAddress: string
+  serverAddress: string,
+  setStatus: (status: string) => void,
+  setDisableButton: (disable: boolean) => void
 ): Promise<any> {
-  const promptId = (await queuePrompt(prompt, clientId, serverAddress))
-    .prompt_id;
+  const promptId = await queuePrompt(prompt, clientId);
+  console.log("当前promptId", promptId);
   const outputImages: any = {};
 
-  while (true) {
-    const out = await new Promise((resolve) => {
-      ws.once("message", (data) => {
-        resolve(data);
-      });
-    });
+  let completed = false;
 
-    if (typeof out === "string") {
-      const message = JSON.parse(out);
+  ws.onmessage = async (event) => {
+    console.log("ws.onmessage", event.data);
+    if (typeof event.data === "string") {
+      const message = JSON.parse(event.data);
+      const data = message.data;
+
+      if (message.type === "execution_start") {
+        setStatus("任务已加入队列中.");
+      }
+
+      if (message.type === "execution_cached") {
+        setStatus("已经开始生成图片，请稍等...");
+      }
+
+      if (message.type === "execution_error") {
+        const { exception_message, exception_type } = data;
+        setStatus(
+          `任务执行出错。|错误类型为: ${exception_type}|错误信息为: ${exception_message}`
+        );
+        setDisableButton(false);
+        ws.onmessage = null;
+      }
+      if (message.type === "progress") {
+        const { value, max, node } = data;
+        const nodeInfo = prompt[data.node]._meta.title;
+        setStatus(`正在执行第 ${node} 号节点:|${nodeInfo}|${value}/${max}`);
+      }
+
+      if (message.type === "status") {
+        const queue_remaining = data.status.exec_info.queue_remaining;
+        setStatus(`还有 ${queue_remaining} 个任务在队列中`);
+      }
+
       if (message.type === "executing") {
-        const data = message.data;
         if (data.node === null && data.prompt_id === promptId) {
-          break; // Execution is done
+          completed = true; // Execution is done
+        } else if (data.prompt_id === promptId) {
+          const nodeInfo = prompt[data.node]._meta.title;
+          setStatus(`开始执行第 ${data.node} 号节点|${nodeInfo}`);
         }
       }
-    } else {
-      continue; // Previews are binary data
     }
+  };
+
+  while (!completed) {
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // 在任务完结之前维持在这里不往下执行
   }
 
   const history = (await getHistory(promptId, serverAddress))[promptId];
