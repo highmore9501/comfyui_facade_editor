@@ -14,6 +14,10 @@ npm install
 npm run dev
 ```
 
+## 设置环境变量
+
+将`.env.example`文件复制一份，命名为`.env.local`，并将`NEXT_PUBLIC_SERVER_ADDRESS`的值替换为实际的 ComfyUI 服务器地址。
+
 ## 使用
 
 用浏览器打开 [http://localhost:3000](http://localhost:3000) 可访问基于设置生成的简化版的 ComfyUI 操作界面.
