@@ -2,13 +2,15 @@
 import React, { useState } from "react";
 import { uploadImage } from "../../utils/comfyui";
 import Image from "next/image";
+import ReactPlayer from "react-player";
 
-type UploadImageProps = {
-  onImageUpload: (value: string) => void;
+type FileUploaderProps = {
+  onFileloaded: (value: string) => void;
 };
 
-const ImageUpload = ({ onImageUpload }: UploadImageProps) => {
-  const [image, setImage] = useState("");
+const FileUploader = ({ onFileloaded }: FileUploaderProps) => {
+  const [uploadedFile, setuploadedFile] = useState("");
+  const [fileType, setFileType] = useState("");
 
   const handleDrop = async (e: any) => {
     e.preventDefault();
@@ -17,7 +19,7 @@ const ImageUpload = ({ onImageUpload }: UploadImageProps) => {
       for (var i = 0; i < e.dataTransfer.items.length; i++) {
         if (e.dataTransfer.items[i].kind === "file") {
           const file = e.dataTransfer.items[i].getAsFile();
-
+          setFileType(file.type);
           if (!file) return;
 
           const host = process.env.NEXT_PUBLIC_SERVER_ADDRESS as string;
@@ -25,8 +27,8 @@ const ImageUpload = ({ onImageUpload }: UploadImageProps) => {
 
           if (!imageName || imageName == "") return;
           const currentImage = URL.createObjectURL(file);
-          setImage(currentImage);
-          onImageUpload(imageName);
+          setuploadedFile(currentImage);
+          onFileloaded(imageName);
         }
       }
     }
@@ -37,8 +39,8 @@ const ImageUpload = ({ onImageUpload }: UploadImageProps) => {
   };
 
   const handleImageRemove = () => {
-    setImage("");
-    onImageUpload("");
+    setuploadedFile("");
+    onFileloaded("");
   };
 
   return (
@@ -48,10 +50,10 @@ const ImageUpload = ({ onImageUpload }: UploadImageProps) => {
       onDrop={handleDrop}
       onDragOver={handleDragOver}
     >
-      {image ? (
+      {uploadedFile && fileType == "image/jpeg" ? (
         <div className="relative">
           <Image
-            src={image}
+            src={uploadedFile}
             alt="Uploaded"
             width={500}
             height={500}
@@ -64,9 +66,24 @@ const ImageUpload = ({ onImageUpload }: UploadImageProps) => {
             x
           </button>
         </div>
+      ) : uploadedFile && fileType == "video/mp4" ? (
+        <div className="relative">
+          <ReactPlayer
+            url={uploadedFile}
+            width={400}
+            controls={true}
+            playing={false}
+          />
+          <button
+            className="absolute top-2 right-2 bg-white text-red-500 rounded-xl px-2"
+            onClick={handleImageRemove}
+          >
+            x
+          </button>
+        </div>
       ) : (
         <div className="h-[250px] flex flex-col justify-center space-y-4">
-          <p>要上传的图片文件</p>
+          <p>上传的文件</p>
           <p>拖到到这里</p>
         </div>
       )}
@@ -74,4 +91,4 @@ const ImageUpload = ({ onImageUpload }: UploadImageProps) => {
   );
 };
 
-export default ImageUpload;
+export default FileUploader;

@@ -6,7 +6,6 @@ import { useForm, useFieldArray, Controller } from "react-hook-form";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -15,7 +14,6 @@ import {
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -23,9 +21,8 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { set, z } from "zod";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { WorkflowParam } from "@/components/CommonWorkflow/CommonWorkflow";
 import { Textarea } from "@/components/ui/textarea";
 import ExpandableDiv from "./ExpandableDiv";
 import { message } from "antd";
@@ -52,7 +49,6 @@ const formSchema = z.object({
 
 const WorkflowEditor = () => {
   const [disableButton, setDisableButton] = useState(false);
-  const [exposedParams, setExposedParams] = useState<WorkflowParam[]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -96,6 +92,7 @@ const WorkflowEditor = () => {
   });
 
   function onSubmit(value: z.infer<typeof formSchema>) {
+    setDisableButton(true);
     const { workflow, workflowTitle, slug, params } = value;
     // 检测workflow是否是json格式
     let workflowJson: any;
@@ -195,7 +192,8 @@ const WorkflowEditor = () => {
       const paramPath = param.path;
 
       const paramValueType = param.valueType == "" ? "string" : param.valueType;
-      const paramRequired = param.required == "" ? "true" : param.required;
+      const paramRequired =
+        param.required == "" || param.required == "true" ? true : false;
 
       let paramMin, parmaMax, paramStep;
 
@@ -213,16 +211,26 @@ const WorkflowEditor = () => {
         paramStep = "";
       }
 
-      params_result.push({
-        name: paramName,
-        description: paramDescription,
-        path: paramPath,
-        valueType: paramValueType,
-        required: paramRequired,
-        min: paramMin,
-        max: parmaMax,
-        step: paramStep,
-      });
+      if (paramValueType == "interger" || paramValueType == "float") {
+        params_result.push({
+          name: paramName,
+          description: paramDescription,
+          path: paramPath,
+          valueType: paramValueType,
+          required: paramRequired,
+          min: paramMin,
+          max: parmaMax,
+          step: paramStep,
+        });
+      } else {
+        params_result.push({
+          name: paramName,
+          description: paramDescription,
+          path: paramPath,
+          valueType: paramValueType,
+          required: paramRequired,
+        });
+      }
     });
 
     if (paramHasError) {
@@ -237,7 +245,9 @@ const WorkflowEditor = () => {
       author: value.author,
       params: params_result,
     };
-    // 将result以json文件保存并下载
+
+    // 生产环境下应该把result保存到数据库，让用户可以通过slug来查询它，并且在CommonWorkflow.tsx里通过它来生成界面
+    // 开发环境下仅result以json文件保存并下载
     const blob = new Blob([JSON.stringify(result)], {
       type: "application/json",
     });
@@ -248,6 +258,8 @@ const WorkflowEditor = () => {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+
+    setDisableButton(false);
   }
 
   return (
@@ -346,163 +358,183 @@ const WorkflowEditor = () => {
           />
           <div className="pt-2">
             <FormLabel>用户可修改参数列表</FormLabel>
-            {fields.map((field, index) => (
-              <ExpandableDiv
-                key={field.id}
-                removeButton={
-                  <button onClick={() => remove(index)}>删除</button>
-                }
-                content={
-                  <div>
-                    <Controller
-                      name={`params.${index}.name`}
-                      control={form.control}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>参数名称</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="string"
-                              placeholder="请输入参数名称"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
+            {fields.map((field, index) => {
+              const valueType = form.watch(`params.${index}.valueType`);
+              return (
+                <ExpandableDiv
+                  key={field.id}
+                  removeButton={
+                    <button onClick={() => remove(index)}>删除</button>
+                  }
+                  content={
+                    <div>
+                      <Controller
+                        name={`params.${index}.name`}
+                        control={form.control}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>参数名称</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="string"
+                                placeholder="请输入参数名称"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Controller
+                        name={`params.${index}.path`}
+                        control={form.control}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>参数路径</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="string"
+                                placeholder="请输入参数路径，例如`49/inputs/text`"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Controller
+                        name={`params.${index}.description`}
+                        control={form.control}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>参数描述</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="string"
+                                placeholder="请输入参数描述"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Controller
+                        name={`params.${index}.required`}
+                        control={form.control}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>是否必填</FormLabel>
+                            <FormControl>
+                              <Select
+                                value={field.value}
+                                onValueChange={(value) => field.onChange(value)}
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue placeholder="该参数是否必填" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="true">是</SelectItem>
+                                  <SelectItem value="false">否</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Controller
+                        name={`params.${index}.valueType`}
+                        control={form.control}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>参数类型</FormLabel>
+                            <FormControl>
+                              <Select
+                                value={field.value}
+                                onValueChange={(value) => field.onChange(value)}
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue placeholder="请选择参数类型" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="string">字符串</SelectItem>
+                                  <SelectItem value="upload">
+                                    上传文件
+                                  </SelectItem>
+                                  <SelectItem value="interger">整数</SelectItem>
+                                  <SelectItem value="float">浮点数</SelectItem>
+                                  <SelectItem value="boolean">
+                                    布尔值
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {(valueType === "interger" || valueType === "float") && (
+                        <>
+                          <Controller
+                            name={`params.${index}.min`}
+                            control={form.control}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>最小值（选填）</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    defaultValue={1}
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <Controller
+                            name={`params.${index}.max`}
+                            control={form.control}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>最大值（选填）</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    defaultValue={4}
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <Controller
+                            name={`params.${index}.step`}
+                            control={form.control}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>步长（选填）</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    defaultValue={0.1}
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </>
                       )}
-                    />
-                    <Controller
-                      name={`params.${index}.path`}
-                      control={form.control}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>参数路径</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="string"
-                              placeholder="请输入参数路径，例如`49/inputs/text`"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Controller
-                      name={`params.${index}.description`}
-                      control={form.control}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>参数描述</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="string"
-                              placeholder="请输入参数描述"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Controller
-                      name={`params.${index}.valueType`}
-                      control={form.control}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>参数类型</FormLabel>
-                          <FormControl>
-                            <Select
-                              value={field.value}
-                              onValueChange={(value) => field.onChange(value)}
-                            >
-                              <SelectTrigger className="w-full">
-                                <SelectValue placeholder="请选择参数类型" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="string">字符串</SelectItem>
-                                <SelectItem value="upload">上传文件</SelectItem>
-                                <SelectItem value="interger">整数</SelectItem>
-                                <SelectItem value="float">浮点数</SelectItem>
-                                <SelectItem value="boolean">布尔值</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Controller
-                      name={`params.${index}.required`}
-                      control={form.control}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>是否必填</FormLabel>
-                          <FormControl>
-                            <Select
-                              value={field.value}
-                              onValueChange={(value) => field.onChange(value)}
-                            >
-                              <SelectTrigger className="w-full">
-                                <SelectValue placeholder="该参数是否必填" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="true">是</SelectItem>
-                                <SelectItem value="false">否</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Controller
-                      name={`params.${index}.min`}
-                      control={form.control}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>最小值（选填）</FormLabel>
-                          <FormControl>
-                            <Input type="number" defaultValue={1} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Controller
-                      name={`params.${index}.max`}
-                      control={form.control}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>最大值（选填）</FormLabel>
-                          <FormControl>
-                            <Input type="number" defaultValue={4} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Controller
-                      name={`params.${index}.step`}
-                      control={form.control}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>步长（选填）</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              defaultValue={0.1}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                }
-              ></ExpandableDiv>
-            ))}
+                    </div>
+                  }
+                ></ExpandableDiv>
+              );
+            })}
             <div
               className="w-full cursor-pointer text-center border border-gray-300 p-2 rounded-md mb-2 hover:bg-gray-500"
               onClick={() =>

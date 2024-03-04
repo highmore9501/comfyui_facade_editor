@@ -27,6 +27,7 @@
     "react-dom": "^18",
     "react-hook-form": "^7.50.1",
     "react-hot-toast": "^2.4.1",
+    "react-player": "^2.15.1",
     "react-toastify": "^10.0.4",
     "sharp": "^0.33.2",
     "tailwind-merge": "^2.2.1",

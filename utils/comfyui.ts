@@ -1,6 +1,7 @@
 // import * as fs from "fs";
 import axios from "axios";
 import { workerData } from "worker_threads";
+import { set } from "zod";
 
 export function changeImageSize(
   width: number,
@@ -153,7 +154,7 @@ export async function getQueueTaskNumber(
   return taskNumber;
 }
 
-export async function getImages(
+export async function getResults(
   ws: WebSocket,
   prompt: any,
   clientId: string,
@@ -162,8 +163,8 @@ export async function getImages(
   setDisableButton: (disable: boolean) => void
 ): Promise<any> {
   const promptId = await queuePrompt(prompt, clientId);
-  console.log("当前promptId", promptId);
-  const outputImages: any = {};
+  console.log("promptId", promptId);
+  const outputResults: any = {};
 
   let completed = false;
 
@@ -215,25 +216,48 @@ export async function getImages(
     await new Promise((resolve) => setTimeout(resolve, 1000)); // 在任务完结之前维持在这里不往下执行
   }
 
+  ws.onmessage = null;
+
   const history = (await getHistory(promptId, serverAddress))[promptId];
+  console.log("history", history);
   for (const o in history.outputs) {
     for (const nodeId in history.outputs) {
       const nodeOutput = history.outputs[nodeId];
       if ("images" in nodeOutput) {
         const imagesOutput: any[] = [];
         for (const image of nodeOutput.images) {
+          const imageFormat = image.format;
           const imageData = await getImage(
             image.filename,
             image.subfolder,
             image.type,
             serverAddress
           );
-          imagesOutput.push(imageData);
+          const blob = new Blob([imageData], { type: imageFormat });
+          imagesOutput.push(blob);
         }
-        outputImages[nodeId] = imagesOutput;
+        outputResults[nodeId] = imagesOutput;
+      } else if ("gifs" in nodeOutput) {
+        const gifsOutput: any[] = [];
+        for (const gif of nodeOutput.gifs) {
+          const gifFormat = gif.format;
+          const gifData = await getImage(
+            gif.filename,
+            gif.subfolder,
+            gif.type,
+            serverAddress
+          );
+          const blob = new Blob([gifData], { type: gifFormat });
+          gifsOutput.push(blob);
+        }
+        outputResults[nodeId] = gifsOutput;
       }
     }
   }
 
-  return outputImages;
+  if (outputResults.length === 0) {
+    setStatus("没有生成图片，请检查工作流是否有输出节点");
+  }
+
+  return outputResults;
 }

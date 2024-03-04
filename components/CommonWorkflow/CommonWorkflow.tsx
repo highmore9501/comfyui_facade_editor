@@ -6,10 +6,10 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
+import ReactPlayer from "react-player";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -18,11 +18,16 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import ImageUpload from "@/components/UploadImage/UploadImage";
-import { getImages } from "@/utils/comfyui";
+import FileUploader from "@/components/FileUploader/FileUploader";
+import { getResults } from "@/utils/comfyui";
+import { v4 as uuidv4 } from "uuid";
 
 // 生产环境下这个值从服务器查询获得
 import workflowSetting from "@/public/workflows/sdxl_img2img_setting.json";
+
+const clientId = uuidv4();
+const server_address = process.env.NEXT_PUBLIC_SERVER_ADDRESS as string;
+const ws = new WebSocket(`ws://${server_address}/ws?clientId=${clientId}`);
 
 export type WorkflowParam = {
   name: string;
@@ -46,12 +51,14 @@ const CommonWorkflow: React.FC<Props> = ({ slug }) => {
     workflowSetting;
   const exposedParams: WorkflowParam[] = params;
 
-  const clientId = Math.random().toString(36).substring(7);
-  const server_address = process.env.NEXT_PUBLIC_SERVER_ADDRESS as string;
-  const ws = new WebSocket(`ws://${server_address}/ws?clientId=${clientId}`);
-  const [result, setResult] = useState<Array<string>>([]);
+  const [results, setResults] = useState<Array<Blob>>([]);
   const [disableButton, setDisableButton] = useState(false);
   const [status, setStatus] = useState("生成结果");
+
+  ws.onerror = (event) => {
+    console.log("ws.onerror", event);
+    setStatus("连接服务器失败");
+  };
 
   // 使用暴露的参数列表生成表单schema
   const formSchemaPrototype = exposedParams.reduce(
@@ -90,10 +97,22 @@ const CommonWorkflow: React.FC<Props> = ({ slug }) => {
   async function onSubmit(value: z.infer<typeof formSchema>) {
     setDisableButton(true);
     setStatus("正在生成结果");
-    setResult([]);
+    setResults([]);
     // 遍历参数，将表单中的值赋值到workflow中
     exposedParams.forEach((param) => {
       const currentValue = value[param.name];
+
+      // 当参数并非必填，而且值为默认值时，不去修改workflow里对应的值
+      if (
+        param.required === false &&
+        (currentValue === "" ||
+          currentValue === "1" ||
+          currentValue === "1.0" ||
+          currentValue === "true")
+      )
+        return;
+
+      //根据路径修改workflow中的值
       const regex = /(\d+)\/(.+)/;
       const match = param.path.match(regex);
 
@@ -115,7 +134,7 @@ const CommonWorkflow: React.FC<Props> = ({ slug }) => {
       }
     });
 
-    const images = await getImages(
+    const results = await getResults(
       ws,
       workflow,
       clientId,
@@ -124,17 +143,16 @@ const CommonWorkflow: React.FC<Props> = ({ slug }) => {
       setDisableButton
     );
 
-    const urls: any[] = [];
-    for (const key in images) {
-      if (Object.prototype.hasOwnProperty.call(images, key)) {
-        const imagesOutput = images[key];
-        imagesOutput.map((image: any) => {
-          const blob = new Blob([image], { type: "image/png" });
-          urls.push(URL.createObjectURL(blob));
+    const blobs: Blob[] = [];
+    for (const key in results) {
+      if (Object.prototype.hasOwnProperty.call(results, key)) {
+        const imagesOutput = results[key];
+        imagesOutput.map((result: Blob) => {
+          blobs.push(result);
         });
       }
     }
-    setResult(urls);
+    setResults(blobs);
     setDisableButton(false);
   }
 
@@ -170,7 +188,7 @@ const CommonWorkflow: React.FC<Props> = ({ slug }) => {
                             })}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>{description}</FormLabel>
+                                <FormLabel>{name}</FormLabel>
                                 <FormControl>
                                   <Textarea
                                     placeholder={`请输入${description}`}
@@ -194,7 +212,7 @@ const CommonWorkflow: React.FC<Props> = ({ slug }) => {
                             })}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>{description}</FormLabel>
+                                <FormLabel>{name}</FormLabel>
                                 <FormControl>
                                   <Input
                                     type="number"
@@ -223,7 +241,7 @@ const CommonWorkflow: React.FC<Props> = ({ slug }) => {
                             })}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>{description}</FormLabel>
+                                <FormLabel>{name}</FormLabel>
                                 <FormControl>
                                   <Input
                                     type="number"
@@ -243,6 +261,13 @@ const CommonWorkflow: React.FC<Props> = ({ slug }) => {
                       }
                     })
                   }
+                  <Button
+                    type="submit"
+                    className="w-full mt-4 text-md "
+                    disabled={disableButton}
+                  >
+                    提交
+                  </Button>
                 </div>
 
                 <div className="flex-1 m-2 rounded-xl justify-between">
@@ -264,9 +289,9 @@ const CommonWorkflow: React.FC<Props> = ({ slug }) => {
                               <FormItem>
                                 <FormLabel>{description}</FormLabel>
                                 <FormControl>
-                                  <ImageUpload
-                                    onImageUpload={(imageName) => {
-                                      form.setValue(name, imageName);
+                                  <FileUploader
+                                    onFileloaded={(fileName) => {
+                                      form.setValue(name, fileName);
                                     }}
                                   />
                                 </FormControl>
@@ -280,33 +305,43 @@ const CommonWorkflow: React.FC<Props> = ({ slug }) => {
                   }
                 </div>
               </div>
-
-              <Button
-                type="submit"
-                className="w-full mt-4 text-md "
-                disabled={disableButton}
-              >
-                提交
-              </Button>
             </form>
           </Form>
         </div>
         <div className="flex-1 m-2 p-2 justify-center items-center rounded-2xl border-4 border-dashed border-primary-500">
-          {result.length > 0 && (
+          {results.length > 0 && (
             <div className="grid grid-cols-2 gap-4">
-              {result.map((url, index) => (
-                <Image
-                  key={index}
-                  src={url}
-                  alt="result"
-                  width={300}
-                  height={300}
-                  className="rounded-xl mx-1"
-                />
-              ))}
+              {results.map((blob, index) => {
+                const resultType = blob.type;
+                console.log(resultType);
+                const url = URL.createObjectURL(blob);
+                if (resultType == "image/png") {
+                  return (
+                    <Image
+                      key={index}
+                      src={url}
+                      alt="result"
+                      width={300}
+                      height={300}
+                      className="rounded-xl mx-1"
+                    />
+                  );
+                } else if (resultType == "video/h264-mp4") {
+                  return (
+                    <ReactPlayer
+                      key={index}
+                      url={url}
+                      width={400}
+                      controls={true}
+                      playing={false}
+                      className="rounded-xl mx-1"
+                    />
+                  );
+                }
+              })}
             </div>
           )}
-          {result.length == 0 && (
+          {results.length == 0 && (
             <div className="grid grid-flow-row justify-center items-center">
               {status.split("|").map((item, index) => (
                 <p key={index}>{item}</p>
