@@ -1,432 +1,248 @@
 {
+  "workflowTitle": "SDXL 图生图工作流",
+  "description": "根据输入的提示词以及上传的参考图片来生成图片，可以调节生成图片数量，生成图片分辨率等参数。生成图片的分辨率单位为MegaPixels。",
+  "author": "Hippo",
   "workflow": {
-    "3": {
+    "4": {
       "inputs": {
-        "text": "(pixar 3d animation), disney character, cinematic, pixar animation, 3d animation, detailed face, octane rendering, strong keylight, 8k, high resolution, masterpiece, trending on artstation",
-        "clip": ["115", 0]
+        "ckpt_name": "fudukiMix_v15.safetensors"
       },
-      "class_type": "CLIPTextEncode",
-      "_meta": { "title": "CLIP Text Encode (Prompt)" }
+      "class_type": "CheckpointLoaderSimple",
+      "_meta": {
+        "title": "Load Checkpoint"
+      }
     },
-    "6": {
+    "8": {
       "inputs": {
-        "text": "text, error, blurry, cropped, nsfw, (signature), watermark, username, artist name, worst quality, bad anatomy, (blurred), (out of focus), green hair, forehead wrinkle, cross eyed, creepy, ",
-        "clip": ["115", 0]
+        "samples": ["93", 0],
+        "vae": ["60", 2]
       },
-      "class_type": "CLIPTextEncode",
-      "_meta": { "title": "CLIP Text Encode (Prompt)" }
-    },
-    "10": {
-      "inputs": { "samples": ["205", 0], "vae": ["214", 0] },
       "class_type": "VAEDecode",
-      "_meta": { "title": "VAE Decode" }
+      "_meta": {
+        "title": "VAE Decode"
+      }
     },
-    "53": {
+    "39": {
       "inputs": {
-        "upscale_method": "nearest-exact",
-        "width": ["309", 0],
-        "height": ["310", 0],
-        "crop": "center",
-        "image": ["119", 0]
+        "model": ["4", 0],
+        "clip": ["4", 1],
+        "lora_stack": ["40", 0]
       },
-      "class_type": "ImageScale",
-      "_meta": { "title": "Upscale Image" }
+      "class_type": "CR Apply LoRA Stack",
+      "_meta": {
+        "title": "💊 CR Apply LoRA Stack"
+      }
+    },
+    "40": {
+      "inputs": {
+        "switch_1": "On",
+        "lora_name_1": "miho_v1.safetensors",
+        "model_weight_1": 1,
+        "clip_weight_1": 1,
+        "switch_2": "On",
+        "lora_name_2": "NsfwPovAllInOneLoraSdxl-000009.safetensors",
+        "model_weight_2": 1,
+        "clip_weight_2": 0.4,
+        "switch_3": "Off",
+        "lora_name_3": "None",
+        "model_weight_3": 1,
+        "clip_weight_3": 0.4
+      },
+      "class_type": "CR LoRA Stack",
+      "_meta": {
+        "title": "💊 CR LoRA Stack"
+      }
+    },
+    "44": {
+      "inputs": {
+        "image": "20230520004 (8).jpg",
+        "upload": "image"
+      },
+      "class_type": "LoadImage",
+      "_meta": {
+        "title": "Load Image"
+      }
+    },
+    "46": {
+      "inputs": {
+        "images": ["70", 0]
+      },
+      "class_type": "PreviewImage",
+      "_meta": {
+        "title": "Preview Image"
+      }
+    },
+    "48": {
+      "inputs": {
+        "text": "analog film grain,BREAK (TOK:1.5),a photo of japanese girl,she cute baby face,flat chest,shaved pussy,and big ass.",
+        "clip": ["39", 1]
+      },
+      "class_type": "CLIPTextEncode",
+      "_meta": {
+        "title": "CLIP Text Encode (Prompt)"
+      }
+    },
+    "49": {
+      "inputs": {
+        "text": "tattoo,embedding:negativeXL_D, ",
+        "clip": ["4", 1]
+      },
+      "class_type": "CLIPTextEncode",
+      "_meta": {
+        "title": "CLIP Text Encode (Prompt)"
+      }
+    },
+    "55": {
+      "inputs": {
+        "text": "analog film grain,BREAK (TOK:1.5),a photo of japanese girl,she cute baby face,flat chest,shaved pussy,and big ass.",
+        "clip": ["60", 1]
+      },
+      "class_type": "CLIPTextEncode",
+      "_meta": {
+        "title": "CLIP Text Encode (Prompt)"
+      }
     },
     "56": {
-      "inputs": { "pixels": ["53", 0], "vae": ["214", 0] },
-      "class_type": "VAEEncode",
-      "_meta": { "title": "VAE Encode" }
+      "inputs": {
+        "text": "tattoo,embedding:negativeXL_D, ",
+        "clip": ["60", 1]
+      },
+      "class_type": "CLIPTextEncode",
+      "_meta": {
+        "title": "CLIP Text Encode (Prompt)"
+      }
     },
-    "91": {
-      "inputs": { "control_net_name": "control_v11p_sd15_openpose.pth" },
-      "class_type": "ControlNetLoaderAdvanced",
-      "_meta": { "title": "Load Advanced ControlNet Model 🛂🅐🅒🅝" }
+    "58": {
+      "inputs": {
+        "b1": 1,
+        "b2": 1.05,
+        "s1": 0.9500000000000001,
+        "s2": 0.9500000000000001,
+        "model": ["39", 0]
+      },
+      "class_type": "FreeU",
+      "_meta": {
+        "title": "FreeU"
+      }
+    },
+    "60": {
+      "inputs": {
+        "ckpt_name": "sd_xl_refiner_1.0.safetensors"
+      },
+      "class_type": "CheckpointLoaderSimple",
+      "_meta": {
+        "title": "Load Checkpoint"
+      }
+    },
+    "70": {
+      "inputs": {
+        "facedetection": "retinaface_resnet50",
+        "codeformer_fidelity": 0.5,
+        "facerestore_model": ["71", 0],
+        "image": ["8", 0]
+      },
+      "class_type": "FaceRestoreCFWithModel",
+      "_meta": {
+        "title": "FaceRestoreCFWithModel"
+      }
+    },
+    "71": {
+      "inputs": {
+        "model_name": "GFPGANv1.4.pth"
+      },
+      "class_type": "FaceRestoreModelLoader",
+      "_meta": {
+        "title": "FaceRestoreModelLoader"
+      }
     },
     "93": {
       "inputs": {
-        "strength": 1,
-        "start_percent": 0,
-        "end_percent": 1,
-        "positive": ["308", 0],
-        "negative": ["308", 1],
-        "control_net": ["91", 0],
-        "image": ["213", 0]
+        "noise_seed": 964877563257980,
+        "steps": 50,
+        "cfg": 10,
+        "sampler_name": "dpmpp_2m_sde",
+        "scheduler": "karras",
+        "base_ratio": 0.8,
+        "denoise": 0.55,
+        "base_model": ["58", 0],
+        "base_positive": ["48", 0],
+        "base_negative": ["49", 0],
+        "refiner_model": ["60", 0],
+        "refiner_positive": ["55", 0],
+        "refiner_negative": ["56", 0],
+        "latent_image": ["96", 0]
       },
-      "class_type": "ControlNetApplyAdvanced",
-      "_meta": { "title": "Apply ControlNet (Advanced)" }
+      "class_type": "SeargeSDXLSampler",
+      "_meta": {
+        "title": "SDXL Sampler v1 (Searge)"
+      }
     },
     "94": {
       "inputs": {
-        "frame_rate": 24,
-        "loop_count": 0,
-        "filename_prefix": "Name_",
-        "format": "video/h264-mp4",
-        "pix_fmt": "yuv420p",
-        "crf": 21,
-        "save_metadata": true,
-        "pingpong": false,
-        "save_output": true,
-        "images": ["10", 0],
-        "audio": ["119", 2]
+        "pixels": ["95", 0],
+        "vae": ["4", 2]
       },
-      "class_type": "VHS_VideoCombine",
-      "_meta": { "title": "Video Combine 🎥🅥🅗🅢" }
+      "class_type": "VAEEncode",
+      "_meta": {
+        "title": "VAE Encode"
+      }
     },
-    "111": {
+    "95": {
       "inputs": {
-        "b1": 1.5,
-        "b2": 1.6,
-        "s1": 0.9,
-        "s2": 0.2,
-        "model": ["221", 0]
+        "upscale_method": "bilinear",
+        "megapixels": 0.8,
+        "image": ["44", 0]
       },
-      "class_type": "FreeU_V2",
-      "_meta": { "title": "FreeU_V2" }
+      "class_type": "ImageScaleToTotalPixels",
+      "_meta": {
+        "title": "ImageScaleToTotalPixels"
+      }
     },
-    "115": {
-      "inputs": { "stop_at_clip_layer": -1, "clip": ["193", 1] },
-      "class_type": "CLIPSetLastLayer",
-      "_meta": { "title": "CLIP Set Last Layer" }
-    },
-    "119": {
+    "96": {
       "inputs": {
-        "video": "语音播报0227.mp4",
-        "force_rate": 0,
-        "force_size": "Disabled",
-        "custom_width": 512,
-        "custom_height": 512,
-        "frame_load_cap": 10,
-        "skip_first_frames": 0,
-        "select_every_nth": 1
+        "amount": 1,
+        "samples": ["94", 0]
       },
-      "class_type": "VHS_LoadVideo",
-      "_meta": { "title": "Load Video (Upload) 🎥🅥🅗🅢" }
-    },
-    "193": {
-      "inputs": {
-        "lora_name": "AnimateLCM_sd15_t2v_lora.safetensors",
-        "strength_model": 1,
-        "strength_clip": 1,
-        "model": ["218", 0],
-        "clip": ["218", 1]
-      },
-      "class_type": "LoraLoader",
-      "_meta": { "title": "Load LoRA" }
-    },
-    "205": {
-      "inputs": {
-        "add_noise": "enable",
-        "noise_seed": 302698,
-        "steps": 5,
-        "cfg": 2,
-        "sampler_name": "lcm",
-        "scheduler": "normal",
-        "start_at_step": 2,
-        "end_at_step": 10000,
-        "return_with_leftover_noise": "disable",
-        "model": ["239", 0],
-        "positive": ["93", 0],
-        "negative": ["93", 1],
-        "latent_image": ["268", 0]
-      },
-      "class_type": "KSamplerAdvanced",
-      "_meta": { "title": "KSampler (Advanced)" }
-    },
-    "213": {
-      "inputs": {
-        "detect_hand": "enable",
-        "detect_body": "enable",
-        "detect_face": "enable",
-        "resolution": 704,
-        "bbox_detector": "yolox_l.onnx",
-        "pose_estimator": "dw-ll_ucoco_384_bs5.torchscript.pt",
-        "image": ["53", 0]
-      },
-      "class_type": "DWPreprocessor",
-      "_meta": { "title": "DWPose Estimator" }
-    },
-    "214": {
-      "inputs": { "vae_name": "vaeFtMse840000Ema_v100.pt" },
-      "class_type": "VAELoader",
-      "_meta": { "title": "Load VAE" }
-    },
-    "218": {
-      "inputs": { "ckpt_name": "disneyPixarCartoon_v10.safetensors" },
-      "class_type": "CheckpointLoaderSimple",
-      "_meta": { "title": "Load Checkpoint" }
-    },
-    "221": {
-      "inputs": {
-        "weight": 0.85,
-        "noise": 0.25,
-        "weight_type": "original",
-        "start_at": 0,
-        "end_at": 1,
-        "unfold_batch": true,
-        "ipadapter": ["222", 0],
-        "clip_vision": ["223", 0],
-        "image": ["225", 0],
-        "model": ["193", 0]
-      },
-      "class_type": "IPAdapterApply",
-      "_meta": { "title": "Apply IPAdapter" }
-    },
-    "222": {
-      "inputs": { "ipadapter_file": "ip-adapter-plus_sd15.safetensors" },
-      "class_type": "IPAdapterModelLoader",
-      "_meta": { "title": "Load IPAdapter Model" }
-    },
-    "223": {
-      "inputs": { "clip_name": "model.safetensors" },
-      "class_type": "CLIPVisionLoader",
-      "_meta": { "title": "Load CLIP Vision" }
-    },
-    "225": {
-      "inputs": {
-        "interpolation": "LANCZOS",
-        "crop_position": "pad",
-        "sharpening": 0,
-        "image": ["53", 0]
-      },
-      "class_type": "PrepImageForClipVision",
-      "_meta": { "title": "Prepare Image For Clip Vision" }
-    },
-    "236": {
-      "inputs": { "model_name": "AnimateLCM_sd15_t2v.ckpt" },
-      "class_type": "ADE_LoadAnimateDiffModel",
-      "_meta": { "title": "Load AnimateDiff Model 🎭🅐🅓②" }
-    },
-    "237": {
-      "inputs": {
-        "context_length": 16,
-        "context_stride": 2,
-        "context_overlap": 6,
-        "closed_loop": false,
-        "fuse_method": "pyramid",
-        "use_on_equal_length": false,
-        "start_percent": 0,
-        "guarantee_steps": 1
-      },
-      "class_type": "ADE_LoopedUniformContextOptions",
-      "_meta": { "title": "Context Options◆Looped Uniform 🎭🅐🅓" }
-    },
-    "238": {
-      "inputs": {
-        "start_percent": 0,
-        "end_percent": 1,
-        "motion_model": ["236", 0]
-      },
-      "class_type": "ADE_ApplyAnimateDiffModel",
-      "_meta": { "title": "Apply AnimateDiff Model (Adv.) 🎭🅐🅓②" }
-    },
-    "239": {
-      "inputs": {
-        "beta_schedule": "autoselect",
-        "model": ["221", 0],
-        "m_models": ["238", 0],
-        "context_options": ["237", 0]
-      },
-      "class_type": "ADE_UseEvolvedSampling",
-      "_meta": { "title": "Use Evolved Sampling 🎭🅐🅓②" }
-    },
-    "242": {
-      "inputs": {
-        "low_threshold": 14,
-        "high_threshold": 57,
-        "resolution": 512,
-        "image": ["53", 0]
-      },
-      "class_type": "CannyEdgePreprocessor",
-      "_meta": { "title": "Canny Edge" }
-    },
-    "243": {
-      "inputs": { "control_net_name": "control_v11p_sd15_canny.pth" },
-      "class_type": "ControlNetLoaderAdvanced",
-      "_meta": { "title": "Load Advanced ControlNet Model 🛂🅐🅒🅝" }
-    },
-    "244": {
-      "inputs": {
-        "max_faces": 1,
-        "min_confidence": 0.2,
-        "resolution": 512,
-        "image": ["246", 0]
-      },
-      "class_type": "MediaPipe-FaceMeshPreprocessor",
-      "_meta": { "title": "MediaPipe Face Mesh" }
-    },
-    "246": {
-      "inputs": { "image": ["53", 0] },
-      "class_type": "ImpactImageBatchToImageList",
-      "_meta": { "title": "Image batch to Image List" }
-    },
-    "247": {
-      "inputs": {
-        "crop_factor": 2.4000000000000004,
-        "bbox_fill": false,
-        "crop_min_size": 10,
-        "drop_size": 1,
-        "dilation": 0,
-        "face": true,
-        "mouth": false,
-        "left_eyebrow": false,
-        "left_eye": false,
-        "left_pupil": false,
-        "right_eyebrow": false,
-        "right_eye": false,
-        "right_pupil": false,
-        "image": ["244", 0]
-      },
-      "class_type": "MediaPipeFaceMeshToSEGS",
-      "_meta": { "title": "MediaPipe FaceMesh to SEGS" }
-    },
-    "248": {
-      "inputs": { "segs": ["247", 0] },
-      "class_type": "ImpactSEGSToMaskList",
-      "_meta": { "title": "SEGS to Mask List" }
-    },
-    "249": {
-      "inputs": { "mask": ["250", 0] },
-      "class_type": "MaskToImage",
-      "_meta": { "title": "Convert Mask to Image" }
-    },
-    "250": {
-      "inputs": {
-        "expand": 7,
-        "incremental_expandrate": 2,
-        "tapered_corners": true,
-        "flip_input": false,
-        "blur_radius": 12,
-        "lerp_alpha": 1,
-        "decay_factor": 1,
-        "mask": ["248", 0]
-      },
-      "class_type": "GrowMaskWithBlur",
-      "_meta": { "title": "GrowMaskWithBlur" }
-    },
-    "254": {
-      "inputs": { "images": ["249", 0] },
-      "class_type": "ImageListToImageBatch",
-      "_meta": { "title": "Image List to Image Batch" }
-    },
-    "256": {
-      "inputs": {
-        "x": 0,
-        "y": 0,
-        "resize_source": true,
-        "destination": ["272", 0],
-        "source": ["258", 0],
-        "mask": ["261", 0]
-      },
-      "class_type": "ImageCompositeMasked",
-      "_meta": { "title": "ImageCompositeMasked" }
-    },
-    "258": {
-      "inputs": {
-        "width": ["309", 0],
-        "height": ["310", 0],
-        "batch_size": ["119", 1],
-        "color": 220
-      },
-      "class_type": "EmptyImage",
-      "_meta": { "title": "EmptyImage" }
-    },
-    "261": {
-      "inputs": { "channel": "blue", "image": ["254", 0] },
-      "class_type": "ImageToMask",
-      "_meta": { "title": "Convert Image to Mask" }
-    },
-    "268": {
-      "inputs": { "samples": ["56", 0], "mask": ["276", 0] },
-      "class_type": "SetLatentNoiseMask",
-      "_meta": { "title": "Set Latent Noise Mask" }
-    },
-    "272": {
-      "inputs": {
-        "width": ["309", 0],
-        "height": ["310", 0],
-        "batch_size": ["119", 1],
-        "color": 255
-      },
-      "class_type": "EmptyImage",
-      "_meta": { "title": "EmptyImage" }
-    },
-    "276": {
-      "inputs": { "channel": "blue", "image": ["256", 0] },
-      "class_type": "ImageToMask",
-      "_meta": { "title": "Convert Image to Mask" }
-    },
-    "308": {
-      "inputs": {
-        "strength": 1,
-        "start_percent": 0,
-        "end_percent": 1,
-        "positive": ["3", 0],
-        "negative": ["6", 0],
-        "control_net": ["243", 0],
-        "image": ["242", 0],
-        "mask_optional": ["261", 0]
-      },
-      "class_type": "ACN_AdvancedControlNetApply",
-      "_meta": { "title": "Apply Advanced ControlNet 🛂🅐🅒🅝" }
-    },
-    "309": {
-      "inputs": { "int": 960 },
-      "class_type": "Width/Height Literal",
-      "_meta": { "title": "Width" }
-    },
-    "310": {
-      "inputs": { "int": 544 },
-      "class_type": "Width/Height Literal",
-      "_meta": { "title": "Height" }
-    },
-    "316": {
-      "inputs": { "images": ["10", 0] },
-      "class_type": "PreviewImage",
-      "_meta": { "title": "Preview Image" }
+      "class_type": "RepeatLatentBatch",
+      "_meta": {
+        "title": "Repeat Latent Batch"
+      }
     }
   },
-  "workflowTitle": "视频转换风格",
-  "slug": "videoStyleChange",
-  "description": "将视频转换为别的风格输出",
-  "author": "匿名",
   "params": [
     {
       "name": "prompt",
+      "path": "55/inputs/text",
       "description": "提示词",
-      "path": "3/inputs/text",
       "valueType": "string",
       "required": true
     },
     {
-      "name": "negative",
-      "description": "负面提示词",
-      "path": "6/inputs/text",
-      "valueType": "string",
-      "required": false
+      "name": "numberOfImages",
+      "path": "96/inputs/amount",
+      "description": "生成图片数",
+      "valueType": "interger",
+      "required": true,
+      "min": 1,
+      "max": 8,
+      "step": 1
     },
     {
-      "name": "video",
-      "description": "需要转化的视频文件",
-      "path": "119/inputs/video",
+      "name": "loadImage",
+      "path": "44/inputs/image",
+      "description": "参考图片",
       "valueType": "upload",
       "required": true
     },
     {
-      "name": "ckpt",
-      "description": "转换的模型，这个模型取决了输出的风格,留空则使用默认模型",
-      "path": "218/inputs/ckpt_name",
-      "valueType": "string",
-      "required": false
-    },
-    {
-      "name": "frames",
-      "description": "视频被截取的帧数，帧数过长会导致暴显存，所以这个值不要取得太高。",
-      "path": "119/inputs/frame_load_cap",
-      "valueType": "interger",
+      "name": "megapixels",
+      "path": "95/inputs/megapixels",
+      "description": "生成图片分辨率",
+      "valueType": "float",
       "required": false,
-      "min": 5,
-      "max": 100,
-      "step": 1
+      "min": 0.8,
+      "max": 1.5,
+      "step": 0.01
     }
   ]
 }

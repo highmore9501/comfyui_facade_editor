@@ -23,7 +23,7 @@ import { getResults } from "@/utils/comfyui";
 import { v4 as uuidv4 } from "uuid";
 
 // 生产环境下这个值从服务器查询获得
-import workflowSetting from "@/public/workflows/sdxl_img2img_setting.json";
+import workflowSetting from "@/public/workflows/current_setting.json";
 
 const clientId = uuidv4();
 const server_address = process.env.NEXT_PUBLIC_SERVER_ADDRESS as string;
