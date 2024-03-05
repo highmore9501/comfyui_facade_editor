@@ -45,7 +45,7 @@ const FileUploader: React.FC<Props> = ({ onFileloaded }) => {
 
   return (
     <div
-      className="text-md m-2 from-background rounded-xl border-4 border-dashed border-primary-500 text-primary-500 text-center items-center justify-center"
+      className="flex flex-col text-md m-2 from-background rounded-xl border-4 border-dashed border-primary-500 text-primary-500 items-center justify-center"
       id="drop_zone"
       onDrop={handleDrop}
       onDragOver={handleDragOver}
@@ -55,10 +55,10 @@ const FileUploader: React.FC<Props> = ({ onFileloaded }) => {
           <Image
             src={uploadedFile}
             alt="Uploaded"
-            width={500}
-            height={500}
-            className="rounded-xl"
-          />
+            width={400}
+            height={400}
+            className="rounded-xl relative"
+          ></Image>
           <button
             className="absolute top-2 right-2 bg-white text-red-500 rounded-xl p-1"
             onClick={handleImageRemove}

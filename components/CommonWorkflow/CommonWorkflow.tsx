@@ -123,10 +123,14 @@ const CommonWorkflow: React.FC<Props> = ({ slug }) => {
 
   return (
     <div className="w-full">
-      <div className="grid grid-rows-1 m-2 p-1 rounded-2xl border-4 border-dashed border-primary-500">
-        <div className="text-3xl text-center my-2 ">{workflowTitle}</div>
-        <p>作者：{author}</p>
-        <p>描述：{description}</p>
+      <div className="grid grid-rows-1 m-2 rounded-2xl border-4 border-line border-primary-500 ">
+        <div className="text-4xl text-center rounded-t-xl bg-slate-200 dark:bg-slate-500 mb-2 py-1 ">
+          {workflowTitle}
+        </div>
+        <div className="px-2 mb-2">
+          <p>作者：{author}</p>
+          <p>描述：{description}</p>
+        </div>
       </div>
       <ParamsInput
         exposedParams={exposedParams}

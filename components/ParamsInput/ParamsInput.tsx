@@ -27,14 +27,14 @@ const ParamsInput: React.FC<Props> = ({
   form,
 }) => {
   return (
-    <div className="m-2 rounded-2xl border-4 border-dashed border-primary-500">
+    <div className="m-2 rounded-2xl border-4 border-line border-primary-500">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-8 w-full"
         >
           <div className="flex flex-row">
-            <div className="flex-1 flex flex-col justify-between m-2">
+            <div className="flex-1 flex flex-col m-2 space-y-2">
               {
                 /* 遍历暴露的参数列表，生成表单 */
                 exposedParams.map((param, key) => {
@@ -124,13 +124,15 @@ const ParamsInput: React.FC<Props> = ({
                   }
                 })
               }
-              <Button
-                type="submit"
-                className="w-full mt-auto"
-                disabled={disableButton}
-              >
-                提交
-              </Button>
+              <div className="mt-auto">
+                <Button
+                  type="submit"
+                  className="w-full mt-2"
+                  disabled={disableButton}
+                >
+                  提交
+                </Button>
+              </div>
             </div>
 
             <div className="flex-1 m-2 justify-between">
@@ -150,7 +152,7 @@ const ParamsInput: React.FC<Props> = ({
                         })}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{description}</FormLabel>
+                            <FormLabel>{name}</FormLabel>
                             <FormControl>
                               <FileUploader
                                 onFileloaded={(fileName) => {

@@ -264,9 +264,9 @@ const WorkflowEditor = () => {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex container h-screen p-4"
+        className="flex container p-4"
       >
-        <div className="flex-1 p-2 h-full w-full">
+        <div className="flex-1 p-2">
           <FormField
             key="workflow"
             name="workflow"
@@ -354,7 +354,7 @@ const WorkflowEditor = () => {
               </FormItem>
             )}
           />
-          <div className="pt-2">
+          <div className="flex flex-col justify-between pt-2">
             <FormLabel>用户可修改参数列表</FormLabel>
             {fields.map((field, index) => {
               const valueType = form.watch(`params.${index}.valueType`);
@@ -375,7 +375,7 @@ const WorkflowEditor = () => {
               );
             })}
             <div
-              className="w-full cursor-pointer text-center border border-gray-300 p-2 rounded-md mb-2 hover:bg-gray-500"
+              className="w-full cursor-pointer text-center border border-gray-300 p-2 rounded-md mb-10 hover:bg-gray-500"
               onClick={() =>
                 append({
                   name: "",
@@ -391,7 +391,7 @@ const WorkflowEditor = () => {
             >
               新增参数
             </div>
-            <div className="pt-2">
+            <div className="mt-auto">
               <Button
                 type="submit"
                 className="w-full text-2xl"
