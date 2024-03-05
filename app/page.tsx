@@ -1,12 +1,21 @@
+"use client";
 import CommonWorkflow from "@/components/CommonWorkflow/CommonWorkflow";
+import Header from "@/components/Header/Head";
+import PageNavigator from "@/components/PageNavigator/PageNavigator";
+import { useSearchParams } from "next/navigation";
 
 export default function Home() {
+  const searchParams = useSearchParams();
+  const slug = searchParams.get("slug");
+  console.log(slug);
+  const currentWorkFlow = slug ? slug.toString() : "sdxl_img2img";
+
   return (
     <>
-      {/* <div className="w-full text-3xl">名称与logo</div> */}
-      <div className="flex">
-        {/* <aside className="w-[200px] text-3xl text-center">导航栏</aside> */}
-        <CommonWorkflow slug="sdxl_img2img" />
+      <Header />
+      <div className="flex pt-4">
+        <PageNavigator />
+        <CommonWorkflow slug={currentWorkFlow} />
       </div>
     </>
   );
