@@ -47,6 +47,8 @@ const CommonWorkflow: React.FC<Props> = ({ slug }) => {
         accumulator[currentParam.name] = "true";
       } else if (currentParam.valueType === "interger") {
         accumulator[currentParam.name] = "1";
+      } else if (currentParam.valueType === "seed") {
+        accumulator[currentParam.name] = "0";
       } else if (currentParam.valueType === "float") {
         accumulator[currentParam.name] = "1.0";
       } else if (
@@ -66,13 +68,18 @@ const CommonWorkflow: React.FC<Props> = ({ slug }) => {
     defaultValues: formSchemaDefalutValues,
   });
 
-  async function onSubmit(value: z.infer<typeof formSchema>) {
+  async function onSubmit(formData: z.infer<typeof formSchema>) {
     setDisableButton(true);
     setStatus("正在生成结果");
     setResults([]);
     // 遍历参数，将表单中的值赋值到workflow中
     exposedParams.forEach((param) => {
-      const currentValue = value[param.name];
+      let currentValue;
+      if (param.valueType === "seed" && formData[param.name] === "0") {
+        currentValue = Math.floor(Math.random() * 1000000000);
+      } else {
+        currentValue = formData[param.name];
+      }
 
       // 当参数并非必填，而且值为默认值时，不去修改workflow里对应的值
       if (

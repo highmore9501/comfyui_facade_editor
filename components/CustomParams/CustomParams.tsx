@@ -112,6 +112,7 @@ const CustomParams: React.FC<Props> = ({ form, index, valueType }) => {
                   <SelectItem value="upload">上传文件</SelectItem>
                   <SelectItem value="interger">整数</SelectItem>
                   <SelectItem value="float">浮点数</SelectItem>
+                  <SelectItem value="seed">种子</SelectItem>
                   <SelectItem value="boolean">布尔值</SelectItem>
                 </SelectContent>
               </Select>
@@ -121,7 +122,9 @@ const CustomParams: React.FC<Props> = ({ form, index, valueType }) => {
         )}
       />
 
-      {(valueType === "interger" || valueType === "float") && (
+      {(valueType === "interger" ||
+        valueType === "float" ||
+        valueType === "seed") && (
         <>
           <Controller
             name={`params.${index}.min`}

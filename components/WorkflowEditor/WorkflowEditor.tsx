@@ -194,7 +194,7 @@ const WorkflowEditor = () => {
 
       let paramMin, parmaMax, paramStep;
 
-      if (paramValueType == "interger") {
+      if (paramValueType == "interger" || paramValueType == "seed") {
         paramMin = param.min == "" ? 1 : parseInt(param.min);
         parmaMax = param.max == "" ? 4 : parseInt(param.max);
         paramStep = param.step == "" ? 1 : parseInt(param.step);
@@ -208,7 +208,11 @@ const WorkflowEditor = () => {
         paramStep = "";
       }
 
-      if (paramValueType == "interger" || paramValueType == "float") {
+      if (
+        paramValueType == "interger" ||
+        paramValueType == "float" ||
+        paramValueType == "seed"
+      ) {
         params_result.push({
           name: paramName,
           description: paramDescription,

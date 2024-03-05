@@ -92,6 +92,35 @@ const ParamsInput: React.FC<Props> = ({
                         )}
                       />
                     );
+                  } else if (valueType === "seed") {
+                    const { min, max, step } = param;
+                    return (
+                      <FormField
+                        key={key}
+                        control={form.control}
+                        name={name}
+                        {...(required && {
+                          rules: { required: "不能为空" },
+                        })}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{name}</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                min={min || 0}
+                                max={max || 1000000000}
+                                step={step || 1}
+                                defaultValue={min || 1}
+                                placeholder={`请输入${description}`}
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    );
                   } else if (valueType === "float") {
                     const { min, max, step } = param;
                     return (
@@ -108,7 +137,7 @@ const ParamsInput: React.FC<Props> = ({
                             <FormControl>
                               <Input
                                 type="number"
-                                min={min || 1.0}
+                                min={min || 0.0}
                                 max={max || 8.0}
                                 step={step || 0.01}
                                 defaultValue={min || 1.0}
