@@ -1,0 +1,43 @@
+{
+  "workflow": {
+    "5": {
+      "inputs": {
+        "image": "微信图片_20231030084324.png",
+        "choose file to upload": "image"
+      },
+      "class_type": "LoadImage"
+    },
+    "6": {
+      "inputs": {
+        "upscale_method": "bilinear",
+        "megapixels": 1.2,
+        "image": ["5", 0]
+      },
+      "class_type": "ImageScaleToTotalPixels"
+    },
+    "7": { "inputs": { "images": ["6", 0] }, "class_type": "PreviewImage" }
+  },
+  "workflowTitle": "图片放大",
+  "slug": "imagescale",
+  "description": "可以将图片放大并添加细节",
+  "author": "河马",
+  "params": [
+    {
+      "name": "upload",
+      "description": "需要放大的图片",
+      "path": "5/inputs/image",
+      "valueType": "upload",
+      "required": true
+    },
+    {
+      "name": "megapixels",
+      "description": "缩放以后的像素，单位为百万像素",
+      "path": "6/inputs/megapixels",
+      "valueType": "float",
+      "required": true,
+      "min": 0.8,
+      "max": 1.5,
+      "step": 0.01
+    }
+  ]
+}

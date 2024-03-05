@@ -167,7 +167,7 @@
     },
     "112": {
       "inputs": {
-        "string": "naked girl, small chests, big ass,shaved pussy"
+        "string": "red shirt, blue pants, green shoes, black hair, white skin,"
       },
       "class_type": "String Literal",
       "_meta": {
@@ -388,6 +388,16 @@
       "required": true,
       "min": 1,
       "max": 4,
+      "step": 1
+    },
+    {
+      "name": "seed",
+      "description": "生成图片的种子数",
+      "path": "11/inputs/seed",
+      "valueType": "seed",
+      "required": true,
+      "min": 0,
+      "max": 999999999999999,
       "step": 1
     }
   ]

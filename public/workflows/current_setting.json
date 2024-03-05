@@ -427,6 +427,16 @@
       "min": 5,
       "max": 100,
       "step": 1
+    },
+    {
+      "name": "seed",
+      "description": "生成图片的种子数",
+      "path": "205/inputs/noise_seed",
+      "valueType": "seed",
+      "required": true,
+      "min": 0,
+      "max": 999999999999999,
+      "step": 1
     }
   ]
 }

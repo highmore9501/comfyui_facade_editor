@@ -74,7 +74,7 @@
     },
     "48": {
       "inputs": {
-        "text": "analog film grain,BREAK (TOK:1.5),a photo of japanese girl,she cute baby face,flat chest,shaved pussy,and big ass.",
+        "text": "analog film grain,BREAK beautiful scenery nature glass bottle landscape, , purple galaxy bottle,",
         "clip": ["39", 1]
       },
       "class_type": "CLIPTextEncode",
@@ -94,7 +94,7 @@
     },
     "55": {
       "inputs": {
-        "text": "analog film grain,BREAK (TOK:1.5),a photo of japanese girl,she cute baby face,flat chest,shaved pussy,and big ass.",
+        "text": "analog film grain,BREAK beautiful scenery nature glass bottle landscape, , purple galaxy bottle,",
         "clip": ["60", 1]
       },
       "class_type": "CLIPTextEncode",
@@ -243,6 +243,16 @@
       "min": 0.8,
       "max": 1.5,
       "step": 0.01
+    },
+    {
+      "name": "seed",
+      "description": "生成图片的种子数",
+      "path": "93/inputs/noise_seed",
+      "valueType": "seed",
+      "required": true,
+      "min": 0,
+      "max": 999999999999999,
+      "step": 1
     }
   ]
 }

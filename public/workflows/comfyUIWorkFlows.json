@@ -10,5 +10,13 @@
   {
     "name": "重绘人物身体",
     "slug": "bodyrepainter"
+  },
+  {
+    "name": "标准文生图",
+    "slug": "text2image"
+  },
+  {
+    "name": "图片放大",
+    "slug": "imagescale"
   }
 ]
