@@ -1,37 +1,5 @@
-// import * as fs from "fs";
 import axios from "axios";
-import { workerData } from "worker_threads";
-import { set } from "zod";
-
-export function changeImageSize(
-  width: number,
-  height: number,
-  run_mode: string
-): [number, number] {
-  // 最小的宽高为本机896，runpod1024
-  const limited = run_mode === "LOCAL" ? 896 : 1024;
-  const minSize = Math.min(width, height);
-
-  // 缩放宽高，使得最窄的边等于limited
-  let scale: number;
-  let widthScale: number;
-  let heightScale: number;
-  if (minSize > limited) {
-    scale = minSize / limited;
-    widthScale = Math.floor(width / scale);
-    heightScale = Math.floor(height / scale);
-  } else {
-    scale = limited / minSize;
-    widthScale = Math.floor(width * scale);
-    heightScale = Math.floor(height * scale);
-  }
-
-  // 将两个值都除以64，然后取整,也就是说边长必须是64的倍数
-  widthScale = Math.floor(widthScale / 64) * 64;
-  heightScale = Math.floor(heightScale / 64) * 64;
-
-  return [widthScale, heightScale];
-}
+import { v4 as uuidv4 } from "uuid";
 
 export async function queuePrompt(
   prompt: Object,
@@ -43,6 +11,7 @@ export async function queuePrompt(
     prompt: prompt,
     client_id: clientId,
   };
+
   while (true) {
     try {
       const response = await axios.post(url, data, {
@@ -81,21 +50,6 @@ export async function getImage(
     }
   );
   return response.data;
-}
-
-export function handleWhitespace(string: string): string {
-  return string
-    .trim()
-    .replace(/\n/g, " ")
-    .replace(/\r/g, " ")
-    .replace(/\t/g, " ");
-}
-
-export function parseName(ckptName: string): string {
-  const path = ckptName;
-  const filename = path.split("/").pop() || "";
-  const filenameWithoutExtension = filename.split(".").slice(0, -1);
-  return filenameWithoutExtension.join(".");
 }
 
 export async function uploadImage(
@@ -145,31 +99,27 @@ export async function uploadImage(
   return promise;
 }
 
-export async function getQueueTaskNumber(
-  serverAddress: string
-): Promise<number> {
-  const response = await axios.get(`http://${serverAddress}/queue`);
-  const taskNumber =
-    response.data.queue_running.length + response.data.queue_pending.length - 1;
-  return taskNumber;
-}
-
 export async function getResults(
-  ws: WebSocket,
   prompt: any,
-  clientId: string,
-  serverAddress: string,
   setStatus: (status: string) => void,
   setDisableButton: (disable: boolean) => void
 ): Promise<any> {
+  const clientId = uuidv4();
+  const server_address = process.env.NEXT_PUBLIC_SERVER_ADDRESS as string;
+  const ws = new WebSocket(`ws://${server_address}/ws?clientId=${clientId}`);
   const promptId = await queuePrompt(prompt, clientId);
-  console.log("promptId", promptId);
+
+  ws.onerror = (event) => {
+    console.log("ws.onerror", event);
+    setStatus("连接服务器失败");
+  };
+
   const outputResults: any = {};
 
   let completed = false;
+  let suceess = false;
 
   ws.onmessage = async (event) => {
-    console.log("ws.onmessage", event.data);
     if (typeof event.data === "string") {
       const message = JSON.parse(event.data);
       const data = message.data;
@@ -188,6 +138,7 @@ export async function getResults(
           `任务执行出错。|错误类型为: ${exception_type}|错误信息为: ${exception_message}`
         );
         setDisableButton(false);
+        completed = true;
         ws.onmessage = null;
       }
       if (message.type === "progress") {
@@ -198,16 +149,28 @@ export async function getResults(
 
       if (message.type === "status") {
         const queue_remaining = data.status.exec_info.queue_remaining;
-        setStatus(`还有 ${queue_remaining} 个任务在队列中`);
+        if (queue_remaining == 0) {
+          setStatus("图片已经生成，正在下载中");
+        } else {
+          setStatus(`还有 ${queue_remaining - 1} 个任务在队列中`);
+        }
       }
 
       if (message.type === "executing") {
         if (data.node === null && data.prompt_id === promptId) {
           completed = true; // Execution is done
+          suceess = true;
         } else if (data.prompt_id === promptId) {
           const nodeInfo = prompt[data.node]._meta.title;
           setStatus(`开始执行第 ${data.node} 号节点|${nodeInfo}`);
         }
+      }
+
+      if (message.type === "execution_interrupted") {
+        setStatus("任务被中断");
+        setDisableButton(false);
+        completed = true;
+        ws.onmessage = null;
       }
     }
   };
@@ -216,11 +179,11 @@ export async function getResults(
     await new Promise((resolve) => setTimeout(resolve, 1000)); // 在任务完结之前维持在这里不往下执行
   }
 
-  ws.onmessage = null;
+  ws.close();
 
-  const history = (await getHistory(promptId, serverAddress))[promptId];
-  console.log("history", history);
-  for (const o in history.outputs) {
+  if (suceess) {
+    const history = (await getHistory(promptId, server_address))[promptId];
+    console.log("history", history);
     for (const nodeId in history.outputs) {
       const nodeOutput = history.outputs[nodeId];
       if ("images" in nodeOutput) {
@@ -231,7 +194,7 @@ export async function getResults(
             image.filename,
             image.subfolder,
             image.type,
-            serverAddress
+            server_address
           );
           const blob = new Blob([imageData], { type: imageFormat });
           imagesOutput.push(blob);
@@ -245,7 +208,7 @@ export async function getResults(
             gif.filename,
             gif.subfolder,
             gif.type,
-            serverAddress
+            server_address
           );
           const blob = new Blob([gifData], { type: gifFormat });
           gifsOutput.push(blob);
@@ -253,10 +216,10 @@ export async function getResults(
         outputResults[nodeId] = gifsOutput;
       }
     }
-  }
 
-  if (outputResults.length === 0) {
-    setStatus("没有生成图片，请检查工作流是否有输出节点");
+    if (outputResults.length === 0) {
+      setStatus("没有生成图片，请检查工作流是否有输出节点");
+    }
   }
 
   return outputResults;

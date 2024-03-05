@@ -1,20 +1,5 @@
 import React from "react";
-
-type ComfyUIWorkFlow = {
-  name: string;
-  slug: string;
-};
-
-const comfyUIWorkFlows: ComfyUIWorkFlow[] = [
-  {
-    name: "图像转换图像",
-    slug: "sdxl_img2img",
-  },
-  {
-    name: "视频转换风格",
-    slug: "video_style_change",
-  },
-];
+import comfyUIWorkFlows from "@/public/workflows/comfyUIWorkFlows.json";
 
 const PageNavigator = () => {
   return (

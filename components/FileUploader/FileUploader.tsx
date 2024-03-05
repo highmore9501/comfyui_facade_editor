@@ -4,11 +4,11 @@ import { uploadImage } from "../../utils/comfyui";
 import Image from "next/image";
 import ReactPlayer from "react-player";
 
-type FileUploaderProps = {
+type Props = {
   onFileloaded: (value: string) => void;
 };
 
-const FileUploader = ({ onFileloaded }: FileUploaderProps) => {
+const FileUploader: React.FC<Props> = ({ onFileloaded }) => {
   const [uploadedFile, setuploadedFile] = useState("");
   const [fileType, setFileType] = useState("");
 

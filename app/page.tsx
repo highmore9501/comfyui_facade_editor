@@ -7,7 +7,6 @@ import { useSearchParams } from "next/navigation";
 export default function Home() {
   const searchParams = useSearchParams();
   const slug = searchParams.get("slug");
-  console.log(slug);
   const currentWorkFlow = slug ? slug.toString() : "sdxl_img2img";
 
   return (

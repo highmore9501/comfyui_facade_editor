@@ -1,0 +1,14 @@
+[
+  {
+    "name": "图像转换图像",
+    "slug": "sdxl_img2img"
+  },
+  {
+    "name": "视频转换风格",
+    "slug": "video_style_change"
+  },
+  {
+    "name": "重绘人物身体",
+    "slug": "bodyrepainter"
+  }
+]

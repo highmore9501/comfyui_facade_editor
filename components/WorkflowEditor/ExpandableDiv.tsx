@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 
-const ExpandableDiv = ({
-  content,
-  removeButton,
-}: {
+type Props = {
   content: React.ReactNode;
   removeButton: React.ReactNode;
-}) => {
+};
+
+const ExpandableDiv: React.FC<Props> = ({ content, removeButton }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleExpand = () => {
