@@ -68,6 +68,8 @@ const CommonWorkflow: React.FC<Props> = ({ slug }) => {
     defaultValues: formSchemaDefalutValues,
   });
 
+  const hasUpload = exposedParams.some((param) => param.valueType === "upload");
+
   async function onSubmit(formData: z.infer<typeof formSchema>) {
     setDisableButton(true);
     setStatus("正在生成结果");
@@ -144,6 +146,7 @@ const CommonWorkflow: React.FC<Props> = ({ slug }) => {
         onSubmit={onSubmit}
         disableButton={disableButton}
         form={form}
+        hasUpload={hasUpload}
       />
       <ResultDisplayer results={results} status={status} />
     </div>

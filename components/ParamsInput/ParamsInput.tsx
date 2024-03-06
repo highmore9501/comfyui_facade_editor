@@ -18,6 +18,7 @@ type Props = {
   onSubmit: any;
   disableButton: boolean;
   form: any;
+  hasUpload: boolean;
 };
 
 const ParamsInput: React.FC<Props> = ({
@@ -25,6 +26,7 @@ const ParamsInput: React.FC<Props> = ({
   onSubmit,
   disableButton,
   form,
+  hasUpload,
 }) => {
   return (
     <div className="m-2 rounded-2xl border-4 border-line border-primary-500">
@@ -164,40 +166,42 @@ const ParamsInput: React.FC<Props> = ({
               </div>
             </div>
 
-            <div className="flex-1 m-2 justify-between">
-              {
-                /* 遍历暴露的参数列表，生成上传图片区域 */
-                exposedParams.map((param, key) => {
-                  const { name, valueType, description, required } = param;
+            {hasUpload && (
+              <div className="flex-1 m-2 justify-between">
+                {
+                  /* 遍历暴露的参数列表，生成上传图片区域 */
+                  exposedParams.map((param, key) => {
+                    const { name, valueType, description, required } = param;
 
-                  if (valueType === "upload") {
-                    return (
-                      <FormField
-                        key={key}
-                        control={form.control}
-                        name={name}
-                        {...(required && {
-                          rules: { required: "不能为空" },
-                        })}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{name}</FormLabel>
-                            <FormControl>
-                              <FileUploader
-                                onFileloaded={(fileName) => {
-                                  form.setValue(name, fileName);
-                                }}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      ></FormField>
-                    );
-                  }
-                })
-              }
-            </div>
+                    if (valueType === "upload") {
+                      return (
+                        <FormField
+                          key={key}
+                          control={form.control}
+                          name={name}
+                          {...(required && {
+                            rules: { required: "不能为空" },
+                          })}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{name}</FormLabel>
+                              <FormControl>
+                                <FileUploader
+                                  onFileloaded={(fileName) => {
+                                    form.setValue(name, fileName);
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        ></FormField>
+                      );
+                    }
+                  })
+                }
+              </div>
+            )}
           </div>
         </form>
       </Form>
