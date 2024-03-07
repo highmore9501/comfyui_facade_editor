@@ -161,7 +161,7 @@ export async function getResults(
           completed = true; // Execution is done
           suceess = true;
         } else if (data.prompt_id === promptId) {
-          const nodeInfo = prompt[data.node]._meta.title;
+          const nodeInfo = prompt[data.node].class_type;
           setStatus(`开始执行第 ${data.node} 号节点|${nodeInfo}`);
         }
       }

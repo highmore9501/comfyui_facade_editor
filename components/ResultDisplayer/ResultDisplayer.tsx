@@ -42,7 +42,7 @@ const ResultDisplayer: React.FC<Props> = ({ results, status }) => {
                       alt="result"
                       width={300}
                       height={300}
-                      className="rounded-xl mx-1"
+                      className="rounded-xl mx-1 auto-dimensions"
                     />
                     <a
                       href={url}

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { uploadImage } from "../../utils/comfyui";
 import Image from "next/image";
 import ReactPlayer from "react-player";
+import MaskEditor from "../MaskEditor/MaskEditor";
 
 type Props = {
   onFileloaded: (value: string) => void;
@@ -11,6 +12,7 @@ type Props = {
 const FileUploader: React.FC<Props> = ({ onFileloaded }) => {
   const [uploadedFile, setuploadedFile] = useState("");
   const [fileType, setFileType] = useState("");
+  const [showMaskEditor, setShowMaskEditor] = useState(false);
 
   const handleDrop = async (e: any) => {
     e.preventDefault();
@@ -24,6 +26,8 @@ const FileUploader: React.FC<Props> = ({ onFileloaded }) => {
 
           const host = process.env.NEXT_PUBLIC_SERVER_ADDRESS as string;
           const imageName = await uploadImage(host, file);
+          console.log(imageName);
+          console.log(fileType);
 
           if (!imageName || imageName == "") return;
           const currentImage = URL.createObjectURL(file);
@@ -41,6 +45,12 @@ const FileUploader: React.FC<Props> = ({ onFileloaded }) => {
   const handleImageRemove = () => {
     setuploadedFile("");
     onFileloaded("");
+    setShowMaskEditor(false);
+  };
+
+  const handleToggleMaskEditor = (e: any) => {
+    e.preventDefault();
+    setShowMaskEditor(!showMaskEditor);
   };
 
   return (
@@ -50,22 +60,36 @@ const FileUploader: React.FC<Props> = ({ onFileloaded }) => {
       onDrop={handleDrop}
       onDragOver={handleDragOver}
     >
-      {uploadedFile && fileType == "image/jpeg" ? (
-        <div className="relative">
-          <Image
+      {uploadedFile && (fileType == "image/jpeg" || fileType == "image/png") ? (
+        !showMaskEditor ? (
+          <div className="relative flex justify-center items-center">
+            <Image
+              src={uploadedFile}
+              alt="Uploaded"
+              width={400}
+              height={400}
+              className="rounded-xl relative"
+            />
+            <button
+              className="absolute top-2 right-2 bg-white text-red-500 rounded-xl p-1 z-51"
+              onClick={handleImageRemove}
+            >
+              x
+            </button>
+            <button
+              className="absolute top-2 left-2 bg-white text-red-500 rounded-xl p-1 z-51"
+              onClick={handleToggleMaskEditor}
+            >
+              M
+            </button>
+          </div>
+        ) : (
+          <MaskEditor
             src={uploadedFile}
-            alt="Uploaded"
-            width={400}
-            height={400}
-            className="rounded-xl relative"
-          ></Image>
-          <button
-            className="absolute top-2 right-2 bg-white text-red-500 rounded-xl p-1"
-            onClick={handleImageRemove}
-          >
-            x
-          </button>
-        </div>
+            handleImageRemove={handleImageRemove}
+            handleToggleMaskEditor={handleToggleMaskEditor}
+          />
+        )
       ) : uploadedFile && fileType == "video/mp4" ? (
         <div className="relative">
           <ReactPlayer

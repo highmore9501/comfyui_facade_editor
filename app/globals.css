@@ -91,3 +91,49 @@
 .arrow.expanded {
   transform: rotate(180deg);
 }
+
+.auto-dimensions {
+  width: auto;
+  height: auto;
+  max-width: 400px;
+  max-height: 400px;
+}
+
+@grid-size: 10px;
+.react-mask-editor-outer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.react-mask-editor-outer .react-mask-editor-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: auto;
+  flex: 1 1 auto;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.react-mask-editor-outer .react-mask-editor-inner .all-canvases {
+  position: relative;
+}
+
+.react-mask-editor-outer canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.react-mask-editor-outer .mask-canvas {
+  z-index: 10;
+}
+
+.react-mask-editor-outer .cursor-canvas {
+  z-index: 20;
+  background-color: transparent;
+}
