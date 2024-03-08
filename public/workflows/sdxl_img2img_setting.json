@@ -5,7 +5,7 @@
   "workflow": {
     "4": {
       "inputs": {
-        "ckpt_name": "fudukiMix_v15.safetensors"
+        "ckpt_name": "SDXLRonghua_v11.safetensors"
       },
       "class_type": "CheckpointLoaderSimple",
       "_meta": {
@@ -35,11 +35,11 @@
     },
     "40": {
       "inputs": {
-        "switch_1": "On",
+        "switch_1": "Off",
         "lora_name_1": "miho_v1.safetensors",
         "model_weight_1": 1,
         "clip_weight_1": 1,
-        "switch_2": "On",
+        "switch_2": "Off",
         "lora_name_2": "NsfwPovAllInOneLoraSdxl-000009.safetensors",
         "model_weight_2": 1,
         "clip_weight_2": 0.4,
@@ -74,7 +74,7 @@
     },
     "48": {
       "inputs": {
-        "text": "analog film grain,BREAK beautiful scenery nature glass bottle landscape, , purple galaxy bottle,",
+        "text": "Imagine a Man, corporate headshot, business fashion, indoor setting, studio background, minimalist setting, confident, professional, composed, corporate colors, natural palette, headshot, upper body, direct gaze, symmetrical, balanced, professional hairstyle, well-groomed, crisp clothing, neutral expression,",
         "clip": ["39", 1]
       },
       "class_type": "CLIPTextEncode",
@@ -84,7 +84,7 @@
     },
     "49": {
       "inputs": {
-        "text": "tattoo,embedding:negativeXL_D, ",
+        "text": "older, eyes, crowfoot, crows feet, crows foot, old, wrinkles, (lowres, low quality, worst quality:1.2), (text:1.2), watermark, painting, drawing, illustration, glitch, deformed, mutated, cross-eyed, ugly, disfigured (lowres, low quality, worst quality:1.2), (text:1.2), watermark, painting, drawing, illustration, glitch, deformed, mutated, cross-eyed, ugly, disfigured, bad hands ",
         "clip": ["4", 1]
       },
       "class_type": "CLIPTextEncode",

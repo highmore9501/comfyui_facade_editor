@@ -18,5 +18,9 @@
   {
     "name": "图片放大",
     "slug": "imagescale"
+  },
+  {
+    "name": "Turbo内画",
+    "slug": "sdxlTurboInpainting"
   }
 ]
