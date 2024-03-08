@@ -7,9 +7,11 @@ import {
   useLayoutEffect,
   useCallback,
 } from "react";
+import { uploadMask } from "@/utils/comfyui";
 
 interface MaskEditorProps {
   src: string;
+  refImage: string;
   canvasRef?: React.MutableRefObject<HTMLCanvasElement>;
   maskOpacity?: number;
   maskColor?: string;
@@ -32,12 +34,14 @@ interface MaskEditorProps {
     | "luminosity";
   handleImageRemove: (e: any) => void;
   handleToggleMaskEditor: (e: any) => void;
+  onFileloaded: (value: string) => void;
+  setDisplaySrc: (value: string) => void;
 }
 
 const MaskEditorDefaults = {
   className: "",
   maskOpacity: 0.75,
-  maskColor: "#23272d",
+  maskColor: "#000000",
   maskBlendMode: "normal",
 };
 
@@ -87,15 +91,24 @@ const MaskEditor: React.FC<MaskEditorProps> = (props: MaskEditorProps) => {
   }, [cursorCanvas]);
 
   useEffect(() => {
-    if (src && context) {
+    if (src) {
       const img = new Image();
       img.onload = (evt) => {
         setSize({ x: img.width, y: img.height });
+      };
+      img.src = src;
+    }
+  }, [src]);
+
+  useEffect(() => {
+    if (context && size) {
+      const img = new Image();
+      img.onload = (evt) => {
         context?.drawImage(img, 0, 0);
       };
       img.src = src;
     }
-  }, [src, context, size]);
+  }, [context, size]);
 
   // Pass mask canvas up
   useLayoutEffect(() => {
@@ -118,8 +131,7 @@ const MaskEditor: React.FC<MaskEditorProps> = (props: MaskEditorProps) => {
       }
       if (maskContext && evt.buttons > 0) {
         maskContext.beginPath();
-        maskContext.fillStyle =
-          evt.buttons > 1 || evt.shiftKey ? "#ffffff" : maskColor;
+        maskContext.fillStyle = maskColor;
         maskContext.arc(evt.offsetX, evt.offsetY, cursorSize, 0, 360);
         maskContext.fill();
       }
@@ -182,12 +194,71 @@ const MaskEditor: React.FC<MaskEditorProps> = (props: MaskEditorProps) => {
   };
 
   // 点击时保存mask
-  const handleSave = (e: any) => {
+  const handleSave = async (e: any) => {
     e.preventDefault();
     if (maskCanvas.current && maskContext) {
-      const mask = maskCanvas.current.toDataURL("image/png");
-      // 这里已经生成了base64格式的mask，然后需要把它上传到comfyUI服务器，拿到返回的mask的url，同时填充到form里对应的位置
-      console.log(mask);
+      const originalCanvas = maskCanvas.current;
+      if (!originalCanvas) return;
+
+      // 创建一个新的 canvas 元素
+      const tempCanvas = document.createElement("canvas");
+      tempCanvas.width = originalCanvas.width;
+      tempCanvas.height = originalCanvas.height;
+
+      const ctx = tempCanvas.getContext("2d");
+      if (!ctx) return;
+
+      // 将原画布的内容复制到新的 canvas 上
+      ctx.drawImage(originalCanvas, 0, 0);
+
+      let imageData = ctx.getImageData(
+        0,
+        0,
+        tempCanvas.width,
+        tempCanvas.height
+      );
+      let data = imageData.data;
+
+      // 遍历每个像素，反转 alpha 通道的值
+      for (let i = 0; i < data.length; i += 4) {
+        data[i + 3] = 255 - data[i + 3];
+      }
+
+      // 将修改后的 ImageData 对象绘制回画布上
+      ctx.putImageData(imageData, 0, 0);
+
+      // 然后导出 blob
+      const blob = await new Promise<Blob | null>((resolve) =>
+        tempCanvas.toBlob(resolve, "image/png")
+      );
+
+      if (!blob) return;
+      // 上传Mask到服务器，拿到服务器的上的mask地址
+      const host = process.env.NEXT_PUBLIC_SERVER_ADDRESS as string;
+      const maskUrl = await uploadMask(host, blob, props.refImage);
+      props.onFileloaded(maskUrl);
+
+      if (!maskUrl || maskUrl == "") return;
+      // 更新文件上传组件显示的图片
+      const displayCanvas = document.createElement("canvas");
+      const displayContext = displayCanvas.getContext("2d");
+      displayCanvas.width = size.x;
+      displayCanvas.height = size.y;
+
+      if (
+        displayCanvas &&
+        displayContext &&
+        maskCanvas.current &&
+        canvas.current
+      ) {
+        displayContext.drawImage(canvas.current, 0, 0);
+        displayContext.globalCompositeOperation = "source-over";
+        displayContext.drawImage(maskCanvas.current, 0, 0);
+      }
+
+      props.setDisplaySrc(displayCanvas.toDataURL());
+      // 切换回文件上传组件界面
+      props.handleToggleMaskEditor(e);
     }
   };
 

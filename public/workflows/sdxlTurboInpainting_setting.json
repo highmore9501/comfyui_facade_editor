@@ -1,0 +1,106 @@
+{
+  "workflow": {
+    "4": {
+      "inputs": { "ckpt_name": "dreamshaperXL_v21TurboDPMSDE.safetensors" },
+      "class_type": "CheckpointLoaderSimple",
+      "_meta": { "title": "Load Checkpoint" }
+    },
+    "165": {
+      "inputs": { "text": "green t-shirt", "clip": ["4", 1] },
+      "class_type": "CLIPTextEncode",
+      "_meta": { "title": "Prompt +" }
+    },
+    "166": {
+      "inputs": {
+        "text": "ugly, deformed, 8 paws, 10 paws, 2 embedding:, 2 beak, realistic",
+        "clip": ["4", 1]
+      },
+      "class_type": "CLIPTextEncode",
+      "_meta": { "title": "Prompt -" }
+    },
+    "168": {
+      "inputs": { "samples": ["172", 0], "mask": ["193", 1] },
+      "class_type": "SetLatentNoiseMask",
+      "_meta": { "title": "Set Latent Noise Mask" }
+    },
+    "171": {
+      "inputs": {
+        "seed": 3222363363915,
+        "steps": 25,
+        "cfg": 2,
+        "sampler_name": "euler_ancestral",
+        "scheduler": "normal",
+        "denoise": 0.7,
+        "preview_method": "auto",
+        "vae_decode": "true",
+        "model": ["4", 0],
+        "positive": ["165", 0],
+        "negative": ["166", 0],
+        "latent_image": ["168", 0],
+        "optional_vae": ["4", 2]
+      },
+      "class_type": "KSampler (Efficient)",
+      "_meta": { "title": "KSampler (Efficient)" }
+    },
+    "172": {
+      "inputs": { "pixels": ["193", 0], "vae": ["4", 2] },
+      "class_type": "VAEEncode",
+      "_meta": { "title": "VAE Encode" }
+    },
+    "193": {
+      "inputs": {
+        "image": "clipspace/clipspace-mask-655912.1000000238.png [input]",
+        "upload": "image"
+      },
+      "class_type": "LoadImage",
+      "_meta": { "title": "Img Inpaint Lat Img" }
+    }
+  },
+  "workflowTitle": "SDXL-Turbo内画",
+  "slug": "sdxlTurboInpainting",
+  "description": "基于dreamshaperXL的内画",
+  "author": "河马",
+  "params": [
+    {
+      "name": "prompt",
+      "description": "描述希望替换的内容",
+      "path": "165/inputs/text",
+      "valueType": "string",
+      "required": true
+    },
+    {
+      "name": "negative",
+      "description": "不希望出现的内容",
+      "path": "166/inputs/text",
+      "valueType": "string",
+      "required": false
+    },
+    {
+      "name": "denoise",
+      "description": "内画强度",
+      "path": "171/inputs/denoise",
+      "valueType": "float",
+      "required": false,
+      "min": 0.0,
+      "max": 1.0,
+      "step": 0.01
+    },
+    {
+      "name": "seed",
+      "description": "种子",
+      "path": "171/inputs/seed",
+      "valueType": "seed",
+      "required": false,
+      "min": 0,
+      "max": 100000000,
+      "step": 1
+    },
+    {
+      "name": "uploadImageMask",
+      "description": "上传原图，并且编辑蒙版",
+      "path": "193/inputs/image",
+      "valueType": "upload",
+      "required": true
+    }
+  ]
+}

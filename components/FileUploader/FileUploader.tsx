@@ -10,9 +10,14 @@ type Props = {
 };
 
 const FileUploader: React.FC<Props> = ({ onFileloaded }) => {
-  const [uploadedFile, setuploadedFile] = useState("");
+  // 界面显示的图片，它可能会在蒙版编辑以后发生变化
+  const [displaySrc, setDisplaySrc] = useState("");
+  // 上传以后显示的图片，它只在上传文件时发生变化
+  const [originalSrc, setOriginalSrc] = useState("");
   const [fileType, setFileType] = useState("");
   const [showMaskEditor, setShowMaskEditor] = useState(false);
+  // 上传完文件以后，从服务器拿到的图片地址，是以服务器为根目录的相对地址
+  const [image, setImage] = useState("");
 
   const handleDrop = async (e: any) => {
     e.preventDefault();
@@ -26,13 +31,15 @@ const FileUploader: React.FC<Props> = ({ onFileloaded }) => {
 
           const host = process.env.NEXT_PUBLIC_SERVER_ADDRESS as string;
           const imageName = await uploadImage(host, file);
-          console.log(imageName);
-          console.log(fileType);
 
           if (!imageName || imageName == "") return;
           const currentImage = URL.createObjectURL(file);
-          setuploadedFile(currentImage);
+          setDisplaySrc(currentImage);
+          setOriginalSrc(currentImage);
+          // 向表单更新图片的url
           onFileloaded(imageName);
+          // 向蒙版编辑器更新图片的url
+          setImage(imageName);
         }
       }
     }
@@ -43,7 +50,7 @@ const FileUploader: React.FC<Props> = ({ onFileloaded }) => {
   };
 
   const handleImageRemove = () => {
-    setuploadedFile("");
+    setDisplaySrc("");
     onFileloaded("");
     setShowMaskEditor(false);
   };
@@ -60,11 +67,11 @@ const FileUploader: React.FC<Props> = ({ onFileloaded }) => {
       onDrop={handleDrop}
       onDragOver={handleDragOver}
     >
-      {uploadedFile && (fileType == "image/jpeg" || fileType == "image/png") ? (
+      {displaySrc && (fileType == "image/jpeg" || fileType == "image/png") ? (
         !showMaskEditor ? (
           <div className="relative flex justify-center items-center">
             <Image
-              src={uploadedFile}
+              src={displaySrc}
               alt="Uploaded"
               width={400}
               height={400}
@@ -85,15 +92,18 @@ const FileUploader: React.FC<Props> = ({ onFileloaded }) => {
           </div>
         ) : (
           <MaskEditor
-            src={uploadedFile}
+            src={displaySrc.startsWith("blob") ? displaySrc : originalSrc}
+            refImage={image}
             handleImageRemove={handleImageRemove}
             handleToggleMaskEditor={handleToggleMaskEditor}
+            onFileloaded={onFileloaded}
+            setDisplaySrc={setDisplaySrc}
           />
         )
-      ) : uploadedFile && fileType == "video/mp4" ? (
+      ) : displaySrc && fileType == "video/mp4" ? (
         <div className="relative">
           <ReactPlayer
-            url={uploadedFile}
+            url={displaySrc}
             width={400}
             controls={true}
             playing={false}

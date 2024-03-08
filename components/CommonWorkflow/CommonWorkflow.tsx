@@ -94,12 +94,12 @@ const CommonWorkflow: React.FC<Props> = ({ slug }) => {
         return;
 
       //根据路径修改workflow中的值
-      const regex = /(\d+)\/(.+)/;
+      const regex = /([^\/]+)/g;
       const match = param.path.match(regex);
 
       if (match) {
-        const workflowIndex = match[1];
-        const pathParts = match[2].split("/");
+        const workflowIndex = match[0];
+        const pathParts = match.slice(1);
 
         let current = workflow[workflowIndex as keyof typeof workflow] as any;
         let parent: any;

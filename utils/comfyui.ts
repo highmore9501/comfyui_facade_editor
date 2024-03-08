@@ -81,6 +81,7 @@ export async function uploadImage(
         .post(url, formData, {
           headers: {
             Accept: "application/json",
+            "Content-Type": "multipart/form-data",
           },
         })
         .then((response) => {
@@ -95,6 +96,52 @@ export async function uploadImage(
     reader.onerror = reject;
   });
   reader.readAsBinaryString(imageData);
+
+  return promise;
+}
+
+export async function uploadMask(
+  host: string,
+  imageData: Blob,
+  refImage: string
+): Promise<string> {
+  const refImageName = refImage.split(".")[0];
+  const fileName = `mask_${refImageName}.png`;
+  const url = `http://${host}/upload/mask`;
+
+  const promise = new Promise<string>((resolve, reject) => {
+    const original_ref = {
+      filename: refImage,
+      type: "input",
+    };
+    // 把imageData转化成png格式
+    const blob = new Blob([imageData], { type: "image/png" });
+
+    const formData = new FormData();
+    formData.append("image", blob, fileName);
+    formData.append("original_ref", JSON.stringify(original_ref));
+    formData.append("type", "input");
+    formData.append("subfolder", "clipspace");
+    formData.append("overwrite", "true");
+
+    axios
+      .post(url, formData, {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((response) => {
+        if (response.status !== 200) {
+          reject("");
+        } else {
+          const name = response.data.name;
+          const subfolder = response.data.subfolder;
+          resolve(`${subfolder}/${name}`);
+        }
+      })
+      .catch(reject);
+  });
 
   return promise;
 }

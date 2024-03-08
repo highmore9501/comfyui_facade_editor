@@ -158,17 +158,16 @@ const WorkflowEditor = () => {
         paramHasError = true;
         return;
       }
-      const regex = /(\d+)\/(.+)/;
+      const regex = /([^\/]+)/g;
       try {
         const match = param.path.match(regex);
 
         if (match) {
-          const workflowIndex = match[1];
-          const pathParts = match[2].split("/");
+          const workflowIndex = match[0];
+          // pathParts是match余下的部分
+          const pathParts = match.slice(1);
 
-          let current = workflowJson[
-            workflowIndex as keyof typeof workflowJson
-          ] as any;
+          let current = workflowJson[workflowIndex as string] as any;
           let parent: any;
           let lastPart = "";
 
@@ -179,6 +178,7 @@ const WorkflowEditor = () => {
           }
         }
       } catch (e) {
+        console.log(e);
         message.error(`${param.name}参数路径不合法`);
         paramHasError = true;
         return;
