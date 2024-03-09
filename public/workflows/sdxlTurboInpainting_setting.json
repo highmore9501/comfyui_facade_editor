@@ -97,7 +97,7 @@
     },
     {
       "name": "uploadImageMask",
-      "description": "上传原图，并且编辑蒙版",
+      "description": "先上传原图，点击M进入蒙版编辑，编辑结束后点击S保存并退出，编辑中点击C清除蒙版",
       "path": "193/inputs/image",
       "valueType": "upload",
       "required": true

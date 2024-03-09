@@ -22,7 +22,11 @@ npm run dev
 
 用浏览器打开 [http://localhost:3000](http://localhost:3000) 可访问基于设置生成的简化版的 ComfyUI 操作界面.
 
+![工作流使用界面](public/user_interface.png)
+
 用浏览器打开 [http://localhost:3000/workflow](http://localhost:3000/workflow) 可访问编辑和设置工作流的界面.
+
+![工作流编辑界面](public/workflow_editor.png)
 
 ## 其它
 
