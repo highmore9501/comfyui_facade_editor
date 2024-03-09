@@ -41,7 +41,7 @@ const ParamsInput: React.FC<Props> = ({
                 /* 遍历暴露的参数列表，生成表单 */
                 exposedParams.map((param, key) => {
                   const { name, valueType, description, required } = param;
-
+                  const labelText = `${name} : ${description}`;
                   if (valueType === "string") {
                     return (
                       <FormField
@@ -53,7 +53,7 @@ const ParamsInput: React.FC<Props> = ({
                         })}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{name}</FormLabel>
+                            <FormLabel>{labelText}</FormLabel>
                             <FormControl>
                               <Textarea
                                 placeholder={`请输入${description}`}
@@ -77,7 +77,7 @@ const ParamsInput: React.FC<Props> = ({
                         })}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{name}</FormLabel>
+                            <FormLabel>{labelText}</FormLabel>
                             <FormControl>
                               <Input
                                 type="number"
@@ -106,7 +106,7 @@ const ParamsInput: React.FC<Props> = ({
                         })}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{name}</FormLabel>
+                            <FormLabel>{labelText}</FormLabel>
                             <FormControl>
                               <Input
                                 type="number"
@@ -135,7 +135,7 @@ const ParamsInput: React.FC<Props> = ({
                         })}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{name}</FormLabel>
+                            <FormLabel>{labelText}</FormLabel>
                             <FormControl>
                               <Input
                                 type="number"
@@ -172,6 +172,7 @@ const ParamsInput: React.FC<Props> = ({
                   /* 遍历暴露的参数列表，生成上传图片区域 */
                   exposedParams.map((param, key) => {
                     const { name, valueType, description, required } = param;
+                    const labelText = `${name} : ${description}`;
 
                     if (valueType === "upload") {
                       return (
@@ -184,7 +185,7 @@ const ParamsInput: React.FC<Props> = ({
                           })}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>{name}</FormLabel>
+                              <FormLabel>{labelText}</FormLabel>
                               <FormControl>
                                 <FileUploader
                                   onFileloaded={(fileName) => {
