@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import FileUploader from "@/components/FileUploader/FileUploader";
 import { WorkflowParam } from "@/types/types";
+import { FormattedMessage } from "react-intl";
 
 type Props = {
   exposedParams: WorkflowParam[];
@@ -161,7 +162,7 @@ const ParamsInput: React.FC<Props> = ({
                   className="w-full mt-2"
                   disabled={disableButton}
                 >
-                  提交
+                  <FormattedMessage id="components.ParamsInput.submit" />
                 </Button>
               </div>
             </div>

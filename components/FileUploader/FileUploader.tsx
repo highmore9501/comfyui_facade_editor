@@ -4,12 +4,14 @@ import { uploadImage } from "../../utils/comfyui";
 import Image from "next/image";
 import ReactPlayer from "react-player";
 import MaskEditor from "../MaskEditor/MaskEditor";
+import { useIntl } from "react-intl";
 
 type Props = {
   onFileloaded: (value: string) => void;
 };
 
 const FileUploader: React.FC<Props> = ({ onFileloaded }) => {
+  const intl = useIntl();
   // 界面显示的图片，它可能会在蒙版编辑以后发生变化
   const [displaySrc, setDisplaySrc] = useState("");
   // 上传以后显示的图片，它只在上传文件时发生变化
@@ -117,8 +119,11 @@ const FileUploader: React.FC<Props> = ({ onFileloaded }) => {
         </div>
       ) : (
         <div className="h-[250px] flex flex-col justify-center space-y-4">
-          <p>上传的文件</p>
-          <p>拖到到这里</p>
+          <p>
+            {intl.formatMessage({
+              id: "components.FileUploader.description",
+            })}
+          </p>
         </div>
       )}
     </div>

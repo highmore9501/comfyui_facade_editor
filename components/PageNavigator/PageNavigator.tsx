@@ -1,12 +1,15 @@
 import React from "react";
 import comfyUIWorkFlows from "@/public/workflows/comfyUIWorkFlows.json";
 import { useSearchParams } from "next/navigation";
+import { FormattedMessage } from "react-intl";
 
 const PageNavigator = () => {
   const currentSlug = useSearchParams().get("slug");
   return (
     <aside className="w-[150px] m-2 rounded-2xl border-4 border-line border-primary-500 ">
-      <h1 className="text-xl text-center py-4">工作流列表</h1>
+      <h1 className="text-xl text-center py-4">
+        <FormattedMessage id="components.PageNavigator.title" />
+      </h1>
       <div className="space-y-4">
         {comfyUIWorkFlows.map((workflow) => (
           <a

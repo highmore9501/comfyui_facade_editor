@@ -10,15 +10,14 @@ import ResultDisplayer from "@/components/ResultDisplayer/ResultDisplayer";
 import ParamsInput from "../ParamsInput/ParamsInput";
 import { getResults } from "@/utils/comfyui";
 import { WorkflowParam } from "@/types/types";
-
-// 生产环境下这个值从服务器查询获得
-// import workflowSetting from "@/public/workflows/current_setting.json";
+import { FormattedMessage, useIntl } from "react-intl";
 
 type Props = {
   slug: string;
 };
 
 const CommonWorkflow: React.FC<Props> = ({ slug }) => {
+  const intl = useIntl();
   // 生产环境下，需要从服务器用slug查询以获取workflowSetting
   // const workflowSetting = getWorkflowSetting(slug) as any;
   const jsonName = slug ? `${slug}_setting.json` : "current_setting.json";
@@ -30,7 +29,11 @@ const CommonWorkflow: React.FC<Props> = ({ slug }) => {
 
   const [results, setResults] = useState<Array<Blob>>([]);
   const [disableButton, setDisableButton] = useState(false);
-  const [status, setStatus] = useState("生成结果");
+  const [status, setStatus] = useState(
+    intl.formatMessage({
+      id: "components.CommonWorkflow.generateResult",
+    })
+  );
 
   // 使用暴露的参数列表生成表单schema
   const formSchemaPrototype = exposedParams.reduce(
@@ -72,7 +75,11 @@ const CommonWorkflow: React.FC<Props> = ({ slug }) => {
 
   async function onSubmit(formData: z.infer<typeof formSchema>) {
     setDisableButton(true);
-    setStatus("正在生成结果");
+    setStatus(
+      intl.formatMessage({
+        id: "components.CommonWorkflow.generating",
+      })
+    );
     setResults([]);
     // 遍历参数，将表单中的值赋值到workflow中
     exposedParams.forEach((param) => {
@@ -115,7 +122,12 @@ const CommonWorkflow: React.FC<Props> = ({ slug }) => {
       }
     });
 
-    const results = await getResults(workflow, setStatus, setDisableButton);
+    const results = await getResults(
+      workflow,
+      intl,
+      setStatus,
+      setDisableButton
+    );
 
     const blobs: Blob[] = [];
     for (const key in results) {
@@ -137,8 +149,13 @@ const CommonWorkflow: React.FC<Props> = ({ slug }) => {
           {workflowTitle}
         </div>
         <div className="px-2 mb-2">
-          <p>作者：{author}</p>
-          <p>描述：{description}</p>
+          <p>
+            <FormattedMessage id="components.CommonWorkflow.author" />：{author}
+          </p>
+          <p>
+            <FormattedMessage id="components.CommonWorkflow.description" />：
+            {description}
+          </p>
         </div>
       </div>
       <ParamsInput

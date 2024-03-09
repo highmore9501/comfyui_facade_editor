@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import {NextAuthProvider} from "@/components/AuthProvider/AuthProvider";
 import ThemeProvider from "@/components/ThemeProvider/ThemeProvider";
 import Toast from "@/components/Toast/Toast";
 import { Poppins } from "next/font/google";
 
 // Poppins字体包;
-const poppins = Poppins({ 
-  subsets: ["latin"], 
-  weight: ['400','500', '700', '900'],
-  style: ['normal', 'italic'],
-  variable:'--font-poppins',
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "700", "900"],
+  style: ["normal", "italic"],
+  variable: "--font-poppins",
 });
 
 export const metadata: Metadata = {
@@ -26,18 +25,16 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <head>
-        <link 
-          rel="stylesheet" 
-          href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css'
-          crossOrigin='anonymous'
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+          crossOrigin="anonymous"
         />
       </head>
       <body className={poppins.className}>
         <ThemeProvider>
           <Toast />
-          <main className="font-normal">
-              {children}
-          </main>          
+          <main className="font-normal">{children}</main>
         </ThemeProvider>
       </body>
     </html>

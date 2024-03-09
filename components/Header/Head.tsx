@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import ThemeContext from "@/context/themeContext";
 import Link from "next/link";
 import { MdDarkMode, MdOutlineLightMode } from "react-icons/md";
+import { FormattedMessage } from "react-intl";
 
 const Header = () => {
   const { darkTheme, setDarkTheme } = useContext(ThemeContext);
@@ -26,7 +27,7 @@ const Header = () => {
             isEditor ? "" : "bg-slate-200 dark:bg-slate-500"
           }`}
         >
-          ComfyUI简易测试器
+          <FormattedMessage id="components.Header.title" />
         </Link>
         <ul className="flex items-center ml-5">
           <li className="ml-2">
@@ -55,7 +56,7 @@ const Header = () => {
             isEditor ? "bg-slate-200 dark:bg-slate-500" : ""
           }`}
         >
-          工作流编辑器
+          <FormattedMessage id="components.Header.workflowEditor" />
         </Link>
       </div>
     </header>

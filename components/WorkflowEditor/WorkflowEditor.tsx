@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import ExpandableDiv from "./ExpandableDiv";
 import { message } from "antd";
 import CustomParams from "../CustomParams/CustomParams";
+import { useIntl } from "react-intl";
 
 const paramSchema = z.object({
   name: z.string(),
@@ -42,6 +43,8 @@ const formSchema = z.object({
 });
 
 const WorkflowEditor = () => {
+  const intl = useIntl();
+
   const [disableButton, setDisableButton] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -51,7 +54,9 @@ const WorkflowEditor = () => {
       slug: "",
       workflowTitle: "",
       description: "",
-      author: "匿名",
+      author: intl.formatMessage({
+        id: "components.WorkflowEditor.anonymous",
+      }),
       params: [
         {
           name: "",
@@ -93,45 +98,60 @@ const WorkflowEditor = () => {
     try {
       workflowJson = JSON.parse(workflow);
     } catch (e) {
-      message.error("工作流内容不是json格式");
+      message.error(
+        intl.formatMessage({
+          id: "components.WorkflowEditor.notJson",
+        })
+      );
       return;
     }
     // 检测workflowJson内容是否合法，防止有人把ui.json当api.json复制过来
     for (const [key, value] of Object.entries(workflowJson)) {
-      if (isNaN(parseInt(key))) {
+      if (
+        isNaN(parseInt(key)) ||
+        typeof value !== "object" ||
+        !value ||
+        !value.hasOwnProperty("class_type")
+      ) {
         message.error(
-          "工作流内容不合法，请检查是否是comfyUI导出的api格式json文件"
-        );
-        return;
-      }
-      if (typeof value !== "object") {
-        message.error(
-          "工作流内容不合法，请检查是否是comfyUI导出的api格式json文件"
-        );
-        return;
-      }
-      if (!value || !value.hasOwnProperty("class_type")) {
-        message.error(
-          "工作流内容不合法，请检查是否是comfyUI导出的api格式json文件"
+          intl.formatMessage({
+            id: "components.WorkflowEditor.illegalWorkflow",
+          })
         );
         return;
       }
     }
     // 检测各值格式是否合规
     if (workflowTitle === "") {
-      message.error("工作流名称不能为空");
+      message.error(
+        intl.formatMessage({
+          id: "components.WorkflowEditor.emptyName",
+        })
+      );
       return;
     }
     if (workflowTitle.length > 50) {
-      message.error("工作流名称不能超过50个字符");
+      message.error(
+        intl.formatMessage({
+          id: "components.WorkflowEditor.nameIsTooLong",
+        })
+      );
       return;
     }
     if (slug === "") {
-      message.error("缩写不能为空");
+      message.error(
+        intl.formatMessage({
+          id: "components.WorkflowEditor.emptySlug",
+        })
+      );
       return;
     }
     if (!/^[a-zA-Z0-9]*$/.test(slug)) {
-      message.error("缩写只能是英文和数字");
+      message.error(
+        intl.formatMessage({
+          id: "components.WorkflowEditor.errorSlug",
+        })
+      );
       return;
     }
     // 检测用户可修改参数是否合规
@@ -143,18 +163,30 @@ const WorkflowEditor = () => {
       }
 
       if (param.name === "") {
-        message.error("参数名称不能为空");
+        message.error(
+          intl.formatMessage({
+            id: "components.WorkflowEditor.emptyParam",
+          })
+        );
         paramHasError = true;
         return;
       }
       if (param.path === "") {
-        message.error("参数路径不能为空");
+        message.error(
+          intl.formatMessage({
+            id: "components.WorkflowEditor.emptyPath",
+          })
+        );
         paramHasError = true;
         return;
       }
 
       if (!/^[a-zA-Z0-9]*$/.test(param.name)) {
-        message.error("参数名称只能是英文和数字");
+        message.error(
+          intl.formatMessage({
+            id: "components.WorkflowEditor.errorParam",
+          })
+        );
         paramHasError = true;
         return;
       }
@@ -179,7 +211,14 @@ const WorkflowEditor = () => {
         }
       } catch (e) {
         console.log(e);
-        message.error(`${param.name}参数路径不合法`);
+        message.error(
+          intl.formatMessage(
+            {
+              id: "components.WorkflowEditor.illgalPath",
+            },
+            { name: param.name }
+          )
+        );
         paramHasError = true;
         return;
       }
@@ -278,11 +317,17 @@ const WorkflowEditor = () => {
             control={form.control}
             render={({ field }) => (
               <FormItem className="h-full w-full">
-                <FormLabel>工作流</FormLabel>
+                <FormLabel>
+                  {intl.formatMessage({
+                    id: "components.WorkflowEditor.workflow",
+                  })}
+                </FormLabel>
                 <FormControl className="h-full w-full">
                   <Textarea
                     className="h-full w-full"
-                    placeholder={"请把工作流json内容复制以后粘贴到这里"}
+                    placeholder={intl.formatMessage({
+                      id: "components.WorkflowEditor.copyWorkflow",
+                    })}
                     {...field}
                   />
                 </FormControl>
@@ -299,11 +344,17 @@ const WorkflowEditor = () => {
             rules={{ required: "工作流名称不能为空" }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>工作流名称</FormLabel>
+                <FormLabel>
+                  {intl.formatMessage({
+                    id: "components.WorkflowEditor.workflow",
+                  })}
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="string"
-                    placeholder={"工作流名称..."}
+                    placeholder={intl.formatMessage({
+                      id: "components.WorkflowEditor.workflowName",
+                    })}
                     {...field}
                   />
                 </FormControl>
@@ -318,11 +369,17 @@ const WorkflowEditor = () => {
             rules={{ required: "缩写不能为空" }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>缩写</FormLabel>
+                <FormLabel>
+                  {intl.formatMessage({
+                    id: "components.WorkflowEditor.slug",
+                  })}
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="string"
-                    placeholder={"只能是英文和数字..."}
+                    placeholder={intl.formatMessage({
+                      id: "components.WorkflowEditor.errorSlug",
+                    })}
                     {...field}
                   />
                 </FormControl>
@@ -336,9 +393,18 @@ const WorkflowEditor = () => {
             control={form.control}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>描述</FormLabel>
+                <FormLabel>
+                  {intl.formatMessage({
+                    id: "components.CommonWorkflow.description",
+                  })}
+                </FormLabel>
                 <FormControl>
-                  <Textarea placeholder={"请描述工作流的功能..."} {...field} />
+                  <Textarea
+                    placeholder={intl.formatMessage({
+                      id: "components.WorkflowEditor.descriptionDetails",
+                    })}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -350,23 +416,35 @@ const WorkflowEditor = () => {
             control={form.control}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>作者</FormLabel>
+                <FormLabel>
+                  {intl.formatMessage({
+                    id: "components.CommonWorkflow.author",
+                  })}
+                </FormLabel>
                 <FormControl>
-                  <Input type="string" placeholder={"作者..."} {...field} />
+                  <Input type="string" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
           <div className="flex flex-col justify-between pt-2">
-            <FormLabel>用户可修改参数列表</FormLabel>
+            <FormLabel>
+              {intl.formatMessage({
+                id: "components.WorkflowEditor.userdefinedParamsList",
+              })}
+            </FormLabel>
             {fields.map((field, index) => {
               const valueType = form.watch(`params.${index}.valueType`);
               return (
                 <ExpandableDiv
                   key={field.id}
                   removeButton={
-                    <button onClick={() => remove(index)}>删除</button>
+                    <button onClick={() => remove(index)}>
+                      {intl.formatMessage({
+                        id: "components.WorkflowEditor.delete",
+                      })}
+                    </button>
                   }
                   content={
                     <CustomParams
@@ -393,7 +471,9 @@ const WorkflowEditor = () => {
                 })
               }
             >
-              新增参数
+              {intl.formatMessage({
+                id: "components.WorkflowEditor.addNewParam",
+              })}
             </div>
             <div className="mt-auto">
               <Button
@@ -401,7 +481,9 @@ const WorkflowEditor = () => {
                 className="w-full text-2xl"
                 disabled={disableButton}
               >
-                保存工作流及其设置
+                {intl.formatMessage({
+                  id: "components.WorkflowEditor.save",
+                })}
               </Button>
             </div>
           </div>

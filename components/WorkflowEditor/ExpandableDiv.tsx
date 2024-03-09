@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useIntl } from "react-intl";
 
 type Props = {
   content: React.ReactNode;
@@ -6,6 +7,7 @@ type Props = {
 };
 
 const ExpandableDiv: React.FC<Props> = ({ content, removeButton }) => {
+  const intl = useIntl();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleExpand = () => {
@@ -20,11 +22,15 @@ const ExpandableDiv: React.FC<Props> = ({ content, removeButton }) => {
     >
       <div className="flex flex-row justify-between">
         <div className="cursor-pointer" onClick={toggleExpand}>
-          {isExpanded ? "► 点击展开..." : "▼"}
+          {isExpanded
+            ? intl.formatMessage({
+                id: "components.ExpandableDiv.expand",
+              })
+            : "▼"}
         </div>
         {isExpanded ? <div></div> : removeButton}
       </div>
-      <div className="content">{isExpanded ? <div></div> : content}</div>
+      <div className="content">{isExpanded ? null : content}</div>
     </div>
   );
 };

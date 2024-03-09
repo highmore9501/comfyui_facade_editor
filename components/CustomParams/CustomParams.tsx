@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FormattedMessage, useIntl } from "react-intl";
 
 type Props = {
   form: any;
@@ -24,6 +25,7 @@ type Props = {
 };
 
 const CustomParams: React.FC<Props> = ({ form, index, valueType }) => {
+  const intl = useIntl();
   return (
     <div>
       <Controller
@@ -31,9 +33,17 @@ const CustomParams: React.FC<Props> = ({ form, index, valueType }) => {
         control={form.control}
         render={({ field }) => (
           <FormItem>
-            <FormLabel>参数名称</FormLabel>
+            <FormLabel>
+              <FormattedMessage id="components.CustomParams.paramName" />
+            </FormLabel>
             <FormControl>
-              <Input type="string" placeholder="请输入参数名称" {...field} />
+              <Input
+                type="string"
+                placeholder={intl.formatMessage({
+                  id: "components.CustomParams.paramName.placeholder",
+                })}
+                {...field}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -44,11 +54,15 @@ const CustomParams: React.FC<Props> = ({ form, index, valueType }) => {
         control={form.control}
         render={({ field }) => (
           <FormItem>
-            <FormLabel>参数路径</FormLabel>
+            <FormLabel>
+              <FormattedMessage id="components.CustomParams.paramPath" />
+            </FormLabel>
             <FormControl>
               <Input
                 type="string"
-                placeholder="请输入参数路径，例如`49/inputs/text`"
+                placeholder={intl.formatMessage({
+                  id: "components.CustomParams.paramPath.placeholder",
+                })}
                 {...field}
               />
             </FormControl>
@@ -61,9 +75,17 @@ const CustomParams: React.FC<Props> = ({ form, index, valueType }) => {
         control={form.control}
         render={({ field }) => (
           <FormItem>
-            <FormLabel>参数描述</FormLabel>
+            <FormLabel>
+              <FormattedMessage id="components.CustomParams.paramDescription" />
+            </FormLabel>
             <FormControl>
-              <Input type="string" placeholder="请输入参数描述" {...field} />
+              <Input
+                type="string"
+                placeholder={intl.formatMessage({
+                  id: "components.CustomParams.paramDescription.placeholder",
+                })}
+                {...field}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -74,18 +96,28 @@ const CustomParams: React.FC<Props> = ({ form, index, valueType }) => {
         control={form.control}
         render={({ field }) => (
           <FormItem>
-            <FormLabel>是否必填</FormLabel>
+            <FormLabel>
+              <FormattedMessage id="components.CustomParams.isRequired" />
+            </FormLabel>
             <FormControl>
               <Select
                 value={field.value}
                 onValueChange={(value) => field.onChange(value)}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="该参数是否必填" />
+                  <SelectValue
+                    placeholder={intl.formatMessage({
+                      id: "components.CustomParams.isRequired.placeholder",
+                    })}
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="true">是</SelectItem>
-                  <SelectItem value="false">否</SelectItem>
+                  <SelectItem value="true">
+                    <FormattedMessage id="components.CustomParams.true" />
+                  </SelectItem>
+                  <SelectItem value="false">
+                    <FormattedMessage id="components.CustomParams.false" />
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </FormControl>
@@ -98,22 +130,40 @@ const CustomParams: React.FC<Props> = ({ form, index, valueType }) => {
         control={form.control}
         render={({ field }) => (
           <FormItem>
-            <FormLabel>参数类型</FormLabel>
+            <FormLabel>
+              <FormattedMessage id="components.CustomParams.paramType" />
+            </FormLabel>
             <FormControl>
               <Select
                 value={field.value}
                 onValueChange={(value) => field.onChange(value)}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="请选择参数类型" />
+                  <SelectValue
+                    placeholder={intl.formatMessage({
+                      id: "components.CustomParams.paramType.placeholder",
+                    })}
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="string">字符串</SelectItem>
-                  <SelectItem value="upload">上传文件</SelectItem>
-                  <SelectItem value="interger">整数</SelectItem>
-                  <SelectItem value="float">浮点数</SelectItem>
-                  <SelectItem value="seed">种子</SelectItem>
-                  <SelectItem value="boolean">布尔值</SelectItem>
+                  <SelectItem value="string">
+                    <FormattedMessage id="components.CustomParams.string" />
+                  </SelectItem>
+                  <SelectItem value="upload">
+                    <FormattedMessage id="components.CustomParams.upload" />
+                  </SelectItem>
+                  <SelectItem value="interger">
+                    <FormattedMessage id="components.CustomParams.interger" />
+                  </SelectItem>
+                  <SelectItem value="float">
+                    <FormattedMessage id="components.CustomParams.float" />
+                  </SelectItem>
+                  <SelectItem value="seed">
+                    <FormattedMessage id="components.CustomParams.seed" />
+                  </SelectItem>
+                  <SelectItem value="boolean">
+                    <FormattedMessage id="components.CustomParams.boolean" />
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </FormControl>
@@ -131,7 +181,9 @@ const CustomParams: React.FC<Props> = ({ form, index, valueType }) => {
             control={form.control}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>最小值（选填）</FormLabel>
+                <FormLabel>
+                  <FormattedMessage id="components.CustomParams.min" />
+                </FormLabel>
                 <FormControl>
                   <Input type="number" defaultValue={1} {...field} />
                 </FormControl>
@@ -144,7 +196,9 @@ const CustomParams: React.FC<Props> = ({ form, index, valueType }) => {
             control={form.control}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>最大值（选填）</FormLabel>
+                <FormLabel>
+                  <FormattedMessage id="components.CustomParams.max" />
+                </FormLabel>
                 <FormControl>
                   <Input type="number" defaultValue={4} {...field} />
                 </FormControl>
@@ -157,7 +211,9 @@ const CustomParams: React.FC<Props> = ({ form, index, valueType }) => {
             control={form.control}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>步长（选填）</FormLabel>
+                <FormLabel>
+                  <FormattedMessage id="components.CustomParams.step" />
+                </FormLabel>
                 <FormControl>
                   <Input type="number" defaultValue={0.1} {...field} />
                 </FormControl>

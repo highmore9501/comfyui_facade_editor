@@ -1,5 +1,6 @@
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
+import { IntlShape } from "react-intl";
 
 export async function queuePrompt(
   prompt: Object,
@@ -148,6 +149,7 @@ export async function uploadMask(
 
 export async function getResults(
   prompt: any,
+  intl: IntlShape,
   setStatus: (status: string) => void,
   setDisableButton: (disable: boolean) => void
 ): Promise<any> {
@@ -158,7 +160,11 @@ export async function getResults(
 
   ws.onerror = (event) => {
     console.log("ws.onerror", event);
-    setStatus("连接服务器失败");
+    setStatus(
+      intl.formatMessage({
+        id: "utils.comfyui.failedToConnetWS",
+      })
+    );
   };
 
   const outputResults: any = {};
@@ -172,17 +178,33 @@ export async function getResults(
       const data = message.data;
 
       if (message.type === "execution_start") {
-        setStatus("任务已加入队列中.");
+        setStatus(
+          intl.formatMessage({
+            id: "utils.comfyui.taskAdded",
+          })
+        );
       }
 
       if (message.type === "execution_cached") {
-        setStatus("已经开始生成图片，请稍等...");
+        setStatus(
+          intl.formatMessage({
+            id: "utils.comfyui.waitForResult",
+          })
+        );
       }
 
       if (message.type === "execution_error") {
         const { exception_message, exception_type } = data;
         setStatus(
-          `任务执行出错。|错误类型为: ${exception_type}|错误信息为: ${exception_message}`
+          intl.formatMessage(
+            {
+              id: "utils.comfyui.executionError",
+            },
+            {
+              exception_type: exception_type,
+              exception_message: exception_message,
+            }
+          )
         );
         setDisableButton(false);
         completed = true;
@@ -191,15 +213,41 @@ export async function getResults(
       if (message.type === "progress") {
         const { value, max, node } = data;
         const nodeInfo = prompt[data.node]._meta.title;
-        setStatus(`正在执行第 ${node} 号节点:|${nodeInfo}|${value}/${max}`);
+        setStatus(
+          intl.formatMessage(
+            {
+              id: "utils.comfyui.progress",
+            },
+            {
+              node: node,
+              nodeInfo: nodeInfo,
+              value: value,
+              max: max,
+            }
+          )
+        );
       }
 
       if (message.type === "status") {
         const queue_remaining = data.status.exec_info.queue_remaining;
         if (queue_remaining == 0) {
-          setStatus("图片已经生成，正在下载中");
+          setStatus(
+            intl.formatMessage({
+              id: "utils.comfyui.downloading",
+            })
+          );
         } else {
-          setStatus(`还有 ${queue_remaining - 1} 个任务在队列中`);
+          const remaining = queue_remaining - 1;
+          setStatus(
+            intl.formatMessage(
+              {
+                id: "utils.comfyui.tasksRemain",
+              },
+              {
+                remaining: remaining,
+              }
+            )
+          );
         }
       }
 
@@ -209,12 +257,26 @@ export async function getResults(
           suceess = true;
         } else if (data.prompt_id === promptId) {
           const nodeInfo = prompt[data.node].class_type;
-          setStatus(`开始执行第 ${data.node} 号节点|${nodeInfo}`);
+          setStatus(
+            intl.formatMessage(
+              {
+                id: "utils.comfyui.executing",
+              },
+              {
+                datanode: data.node,
+                nodeInfo: nodeInfo,
+              }
+            )
+          );
         }
       }
 
       if (message.type === "execution_interrupted") {
-        setStatus("任务被中断");
+        setStatus(
+          intl.formatMessage({
+            id: "utils.comfyui.executionInterrupted",
+          })
+        );
         setDisableButton(false);
         completed = true;
         ws.onmessage = null;
@@ -265,7 +327,11 @@ export async function getResults(
     }
 
     if (outputResults.length === 0) {
-      setStatus("没有生成图片，请检查工作流是否有输出节点");
+      setStatus(
+        intl.formatMessage({
+          id: "utils.comfyui.noResult",
+        })
+      );
     }
   }
 
