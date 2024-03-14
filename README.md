@@ -1,4 +1,4 @@
-The purpose of this project is to use the API files exported by comfyUI to allow users to customize the exposed parameters and create a more concise and user-friendly interface for comfyUI.
+This project's function is to utilize the API file exported by comfyUI, allowing users to customize the exposable parameters, and create a more concise and user-friendly interface for comfyUI - or a "facade", if you prefer. This allows ordinary users to effortlessly utilize comfyUI without being confused by the intricate interface and numerous parameters.
 
 ## Installation and Running
 
