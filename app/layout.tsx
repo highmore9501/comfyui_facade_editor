@@ -13,7 +13,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "ComfyUI API 测试器",
+  title: "Simplified ComfyUI",
   description: "为用户提供简易comfyUI使用界面",
 };
 
@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN">
+    <html lang="en">
       <head>
         <link
           rel="stylesheet"
