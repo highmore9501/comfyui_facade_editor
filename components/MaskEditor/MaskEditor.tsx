@@ -8,6 +8,60 @@ import {
   useCallback,
 } from "react";
 import { uploadMask } from "@/utils/comfyui";
+import { Button } from "../ui/button";
+
+class Momento {
+  private cursorCanvas: ImageData | null;
+  private maskCanvas: ImageData | null;
+  private history: Array<{
+    cursorCanvas: ImageData | null;
+    maskCanvas: ImageData | null;
+  }>;
+  private historyIndex: number;
+
+  constructor(state: {
+    cursorCanvas: ImageData | null;
+    maskCanvas: ImageData | null;
+  }) {
+    this.cursorCanvas = state.cursorCanvas;
+    this.maskCanvas = state.maskCanvas;
+    this.history = [state];
+    this.historyIndex = 0;
+  }
+
+  getState() {
+    return { cursorCanvas: this.cursorCanvas, maskCanvas: this.maskCanvas };
+  }
+
+  setState(state: {
+    cursorCanvas: ImageData | null;
+    maskCanvas: ImageData | null;
+  }) {
+    this.cursorCanvas = state.cursorCanvas;
+    this.maskCanvas = state.maskCanvas;
+    this.history = this.history.slice(0, this.historyIndex + 1);
+    this.history.push(state);
+    this.historyIndex++;
+  }
+
+  undo() {
+    if (this.historyIndex > 0) {
+      this.historyIndex--;
+      const prevState = this.history[this.historyIndex];
+      this.cursorCanvas = prevState.cursorCanvas;
+      this.maskCanvas = prevState.maskCanvas;
+    }
+  }
+
+  redo() {
+    if (this.historyIndex < this.history.length - 1) {
+      this.historyIndex++;
+      const nextState = this.history[this.historyIndex];
+      this.cursorCanvas = nextState.cursorCanvas;
+      this.maskCanvas = nextState.maskCanvas;
+    }
+  }
+}
 
 interface MaskEditorProps {
   src: string;
@@ -64,6 +118,12 @@ const MaskEditor: React.FC<MaskEditorProps> = (props: MaskEditorProps) => {
     x: 256,
     y: 256,
   });
+  const [momento, setMomento] = useState(
+    new Momento({
+      cursorCanvas: null,
+      maskCanvas: null,
+    })
+  );
 
   useLayoutEffect(() => {
     if (canvas.current && !context) {
@@ -156,12 +216,35 @@ const MaskEditor: React.FC<MaskEditorProps> = (props: MaskEditorProps) => {
       }
     };
 
+    const mouseUpListener = (evt: MouseEvent) => {
+      if (cursorContext && maskContext) {
+        // 在鼠标松开时记录当前状态
+        if (cursorCanvas.current && maskCanvas.current)
+          momento.setState({
+            cursorCanvas: cursorContext.getImageData(
+              0,
+              0,
+              cursorCanvas.current.width,
+              cursorCanvas.current.height
+            ),
+            maskCanvas: maskContext.getImageData(
+              0,
+              0,
+              maskCanvas.current.width,
+              maskCanvas.current.height
+            ),
+          });
+      }
+    };
+
     cursorCanvas.current?.addEventListener("mousemove", listener);
     cursorCanvas.current?.addEventListener("wheel", scrollListener);
+    cursorCanvas.current?.addEventListener("mouseup", mouseUpListener);
 
     return () => {
       cursorCanvas.current?.removeEventListener("mousemove", listener);
       cursorCanvas.current?.removeEventListener("wheel", scrollListener);
+      cursorCanvas.current?.removeEventListener("mouseup", mouseUpListener);
     };
   }, [cursorContext, maskContext, cursorCanvas, cursorSize, maskColor, size]);
 
@@ -185,8 +268,8 @@ const MaskEditor: React.FC<MaskEditorProps> = (props: MaskEditorProps) => {
   );
   useEffect(() => replaceMaskColor(maskColor, false), [maskColor]);
 
-  // 点击时撤销上次画笔生成的mask
-  const handleCancel = (e: any) => {
+  // 点击时清空mask
+  const handleClear = (e: any) => {
     e.preventDefault();
     if (maskContext) {
       maskContext.clearRect(0, 0, size.x, size.y);
@@ -262,6 +345,36 @@ const MaskEditor: React.FC<MaskEditorProps> = (props: MaskEditorProps) => {
     }
   };
 
+  // 点击时撤销上次画笔生成的mask
+  const handleUndo = (e: any) => {
+    e.preventDefault();
+    momento.undo();
+    const currentState = momento.getState();
+
+    const { cursorCanvas: tempCursorCanavas, maskCanvas: tempMaskCanvas } =
+      currentState;
+    if (cursorContext && maskContext && tempCursorCanavas && tempMaskCanvas) {
+      cursorContext.putImageData(tempCursorCanavas, 0, 0);
+      maskContext.putImageData(tempMaskCanvas, 0, 0);
+    } else {
+      handleClear(e);
+    }
+  };
+
+  // 点击时重做上次撤销的操作
+  const handleRedo = (e: any) => {
+    e.preventDefault();
+    momento.redo();
+    const currentState = momento.getState();
+
+    const { cursorCanvas: tempCursorCanavas, maskCanvas: tempMaskCanvas } =
+      currentState;
+    if (cursorContext && maskContext && tempCursorCanavas && tempMaskCanvas) {
+      cursorContext.putImageData(tempCursorCanavas, 0, 0);
+      maskContext.putImageData(tempMaskCanvas, 0, 0);
+    }
+  };
+
   return (
     <div className="fixed top-0 left-0 right-0 bottom-0 z-50 bg-opacity-90 bg-black react-mask-editor-outer">
       <div
@@ -315,18 +428,20 @@ const MaskEditor: React.FC<MaskEditorProps> = (props: MaskEditorProps) => {
         >
           M
         </button>
-        <button
-          className="absolute top-12 left-2 bg-opacity-60 bg-white text-red-500 rounded-xl p-1 z-51"
-          onClick={handleCancel}
-        >
-          C
-        </button>
-        <button
-          className="absolute top-18 left-2 bg-opacity-60 bg-white text-red-500 rounded-xl p-1 z-51"
-          onClick={handleSave}
-        >
-          S
-        </button>
+      </div>
+      <div className="w-full grid grid-cols-4">
+        <Button className="m-2 z-51" onClick={handleUndo}>
+          Undo
+        </Button>
+        <Button className="m-2 z-51" onClick={handleRedo}>
+          Redo
+        </Button>
+        <Button className="m-2 z-51" onClick={handleClear}>
+          Clear
+        </Button>
+        <Button className="m-2 z-51" onClick={handleSave}>
+          Save
+        </Button>
       </div>
     </div>
   );
